@@ -142,6 +142,7 @@ func (s *Server) registerRoutes(routes []config.Route) {
 	}
 
 	s.router.NotFound(http.HandlerFunc(s.serveNotFound))
+
 }
 
 // Handler exposes the server handler stack.
@@ -328,6 +329,8 @@ func (s *Server) recoverHandler(w http.ResponseWriter, r *http.Request, rec any)
 }
 
 func (s *Server) writeErrorPage(w http.ResponseWriter, r *http.Request, pageName string, fallback func(pages.PageData) []byte, status int) {
+	disableCompression(w)
+
 	data := s.basePageData(status, r.URL.Path)
 
 	var body []byte
@@ -350,6 +353,20 @@ func (s *Server) writeErrorPage(w http.ResponseWriter, r *http.Request, pageName
 	header.Set("Cache-Control", "no-store, max-age=0")
 	w.WriteHeader(status)
 	_, _ = w.Write(body)
+}
+
+type compressionDisabler interface {
+	DisableCompression()
+}
+
+func disableCompression(w http.ResponseWriter) {
+	if disabler, ok := w.(compressionDisabler); ok {
+		disabler.DisableCompression()
+	} else {
+		header := w.Header()
+		header.Del("Content-Encoding")
+		header.Del("Content-Length")
+	}
 }
 
 func (s *Server) basePageData(status int, path string) pages.PageData {
@@ -455,20 +472,6 @@ func (s *Server) writeJSON(w http.ResponseWriter, status int, payload any) {
 
 	w.WriteHeader(status)
 	_, _ = w.Write(data)
-}
-
-type compressionDisabler interface {
-	DisableCompression()
-}
-
-func disableCompression(w http.ResponseWriter) {
-	if disabler, ok := w.(compressionDisabler); ok {
-		disabler.DisableCompression()
-	} else {
-		header := w.Header()
-		header.Del("Content-Encoding")
-		header.Del("Content-Length")
-	}
 }
 
 func ensureQuoted(hash string) string {

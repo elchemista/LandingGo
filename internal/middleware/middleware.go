@@ -131,7 +131,7 @@ func Gzip(level int) func(http.Handler) http.Handler {
 				return
 			}
 
-			gzw := &gzipResponseWriter{ResponseWriter: w, pool: &pool}
+			gzw := &gzipResponseWriter{ResponseWriter: w, pool: &pool, compress: true}
 
 			defer func() {
 				if rec := recover(); rec != nil {
@@ -218,9 +218,13 @@ type gzipResponseWriter struct {
 	pool        *sync.Pool
 	writer      *gzip.Writer
 	wroteHeader bool
+	compress    bool
 }
 
 func (g *gzipResponseWriter) ensureWriter() {
+	if !g.compress {
+		return
+	}
 	if g.writer != nil {
 		return
 	}
@@ -234,11 +238,20 @@ func (g *gzipResponseWriter) ensureWriter() {
 }
 
 func (g *gzipResponseWriter) WriteHeader(code int) {
+	if code >= 400 {
+		g.DisableCompression()
+	}
 	g.wroteHeader = true
 	g.ResponseWriter.WriteHeader(code)
 }
 
 func (g *gzipResponseWriter) Write(p []byte) (int, error) {
+	if !g.compress {
+		if !g.wroteHeader {
+			g.WriteHeader(http.StatusOK)
+		}
+		return g.ResponseWriter.Write(p)
+	}
 	if g.writer == nil {
 		g.ensureWriter()
 	}
@@ -258,6 +271,10 @@ func (g *gzipResponseWriter) Close() {
 }
 
 func (g *gzipResponseWriter) DisableCompression() {
+	if !g.compress {
+		return
+	}
+	g.compress = false
 	if g.writer != nil {
 		g.writer.Reset(io.Discard)
 		_ = g.writer.Close()

@@ -8,6 +8,7 @@ const here = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   content: [
     join(here, "../web/pages/**/*.{html,tmpl}"),
+    join(here, "../internal/errors/templates/*.{html,tmpl}"),
     join(here, "./src/**/*.{js,ts}"),
   ],
   theme: {
