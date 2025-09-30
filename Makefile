@@ -9,7 +9,6 @@ BINARY ?= bin/landing
 assets:
 	$(NPM) run build
 
-
 dev:
 	$(GO) run ./cmd/landing --dev --config=$(CONFIG) --addr=$(ADDR)
 

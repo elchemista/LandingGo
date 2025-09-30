@@ -5,6 +5,7 @@ build/public/
 node_modules/
 web/static/app.css
 web/static/app.js
+.env
 *.log
 *.out
 *.tmp

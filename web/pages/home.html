@@ -31,6 +31,8 @@
 </head>
 
 <body class="flex min-h-[100vh] w-full flex-col bg-[#ffffff]">
+  
+  <div class="container flex justify-center">
   <details class="dropdown">
     <summary class="btn m-1">open or close</summary>
     <ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
@@ -38,6 +40,21 @@
       <li><a>Item 2</a></li>
     </ul>
   </details>
+
+  <button class="btn" onclick="my_modal_1.showModal()">open modal</button>
+  <dialog id="my_modal_1" class="modal">
+    <div class="modal-box">
+      <h3 class="text-lg font-bold">Hello!</h3>
+      <p class="py-4">Press ESC key or click the button below to close</p>
+      <div class="modal-action">
+        <form method="dialog">
+          <!-- if there is a button in form, it will close the modal -->
+          <button class="btn">Close</button>
+        </form>
+      </div>
+    </div>
+  </dialog>
+  </div>
 
 <script type="module" src="/static/app.js"></script>
 </html>
