@@ -327,20 +327,22 @@ func (s *Server) recoverHandler(w http.ResponseWriter, r *http.Request, rec any)
 	s.serveError(w, r, http.StatusInternalServerError)
 }
 
-func (s *Server) writeErrorPage(w http.ResponseWriter, r *http.Request, pageName, fallback string, status int) {
+func (s *Server) writeErrorPage(w http.ResponseWriter, r *http.Request, pageName string, fallback func(pages.PageData) []byte, status int) {
+	data := s.basePageData(status, r.URL.Path)
+
 	var body []byte
 	if cached, ok := s.errorCache.Load(pageName); ok {
 		body = cached.([]byte)
 	} else if s.pageMgr.Exists(pageName) {
-		data, err := s.pageMgr.Render(pageName, s.basePageData(status, r.URL.Path))
+		rendered, err := s.pageMgr.Render(pageName, data)
 		if err == nil {
-			body = data
+			body = rendered
 			s.errorCache.Store(pageName, body)
 		}
 	}
 
 	if body == nil {
-		body = []byte(fallback)
+		body = fallback(data)
 	}
 
 	header := w.Header()
