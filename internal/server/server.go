@@ -106,10 +106,10 @@ func New(cfg *config.Config, src *assets.Source, logger *slog.Logger, dev bool) 
 
 	srv.handler = middleware.Chain(
 		http.HandlerFunc(srv.router.ServeHTTP),
-		middleware.Recover(logger, srv.recoverHandler),
-		middleware.WithRequestID("X-Request-Id"),
-		middleware.Logging(logger),
 		middleware.Gzip(-1),
+		middleware.Logging(logger),
+		middleware.WithRequestID("X-Request-Id"),
+		middleware.Recover(logger, srv.recoverHandler),
 	)
 
 	return srv, nil
@@ -142,6 +142,7 @@ func (s *Server) registerRoutes(routes []config.Route) {
 	}
 
 	s.router.NotFound(http.HandlerFunc(s.serveNotFound))
+
 }
 
 // Handler exposes the server handler stack.
@@ -327,29 +328,45 @@ func (s *Server) recoverHandler(w http.ResponseWriter, r *http.Request, rec any)
 	s.serveError(w, r, http.StatusInternalServerError)
 }
 
-func (s *Server) writeErrorPage(w http.ResponseWriter, r *http.Request, pageName, fallback string, status int) {
+func (s *Server) writeErrorPage(w http.ResponseWriter, r *http.Request, pageName string, fallback func(pages.PageData) []byte, status int) {
+	disableCompression(w)
+
+	data := s.basePageData(status, r.URL.Path)
+
 	var body []byte
 	if cached, ok := s.errorCache.Load(pageName); ok {
 		body = cached.([]byte)
 	} else if s.pageMgr.Exists(pageName) {
-		data, err := s.pageMgr.Render(pageName, s.basePageData(status, r.URL.Path))
+		rendered, err := s.pageMgr.Render(pageName, data)
 		if err == nil {
-			body = data
+			body = rendered
 			s.errorCache.Store(pageName, body)
 		}
 	}
 
 	if body == nil {
-		body = []byte(fallback)
+		body = fallback(data)
 	}
 
 	header := w.Header()
-	header.Del("Content-Encoding")
-	header.Del("Content-Length")
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "no-store, max-age=0")
 	w.WriteHeader(status)
 	_, _ = w.Write(body)
+}
+
+type compressionDisabler interface {
+	DisableCompression()
+}
+
+func disableCompression(w http.ResponseWriter) {
+	if disabler, ok := w.(compressionDisabler); ok {
+		disabler.DisableCompression()
+	} else {
+		header := w.Header()
+		header.Del("Content-Encoding")
+		header.Del("Content-Length")
+	}
 }
 
 func (s *Server) basePageData(status int, path string) pages.PageData {
@@ -450,8 +467,6 @@ func (s *Server) writeJSON(w http.ResponseWriter, status int, payload any) {
 	}
 
 	header := w.Header()
-	header.Del("Content-Encoding")
-	header.Del("Content-Length")
 	header.Set("Content-Type", "application/json")
 	header.Set("Cache-Control", "no-store, max-age=0")
 

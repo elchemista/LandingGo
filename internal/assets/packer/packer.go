@@ -357,9 +357,11 @@ func mimeType(path string) string {
 		return "text/html; charset=utf-8"
 	case ".css":
 		return "text/css; charset=utf-8"
-	case ".js":
+	case ".js", ".mjs":
 		return "application/javascript"
 	case ".json":
+		return "application/json"
+	case ".map":
 		return "application/json"
 	case ".png":
 		return "image/png"
