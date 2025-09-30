@@ -344,7 +344,6 @@ func (s *Server) writeErrorPage(w http.ResponseWriter, r *http.Request, pageName
 	}
 
 	header := w.Header()
-	disableCompression(w)
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "no-store, max-age=0")
 	w.WriteHeader(status)
@@ -449,7 +448,6 @@ func (s *Server) writeJSON(w http.ResponseWriter, status int, payload any) {
 	}
 
 	header := w.Header()
-	disableCompression(w)
 	header.Set("Content-Type", "application/json")
 	header.Set("Cache-Control", "no-store, max-age=0")
 
