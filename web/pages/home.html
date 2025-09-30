@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{{.Title}} | Sample Landing</title>
+  <link rel="canonical" href="{{.BaseURL}}{{.RoutePath}}">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+  <header>
+    <img src="/static/img/logo.png" alt="Logo" width="64" height="64">
+    <h1>{{.Title}}</h1>
+    <p>Rendered at {{.NowRFC3339}}</p>
+  </header>
+  <nav>
+    <a href="/">Home</a>
+    <a href="/about">About</a>
+    <a href="/contact">Contact</a>
+  </nav>
+  <main>
+    <p>This landing page is served from a single Go binary.</p>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>

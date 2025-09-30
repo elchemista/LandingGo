@@ -1,0 +1,7 @@
+bin/
+build/embedded.go
+build/public/
+*.log
+*.out
+*.tmp
+.DS_Store

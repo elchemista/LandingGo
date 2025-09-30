@@ -1,0 +1,42 @@
+:root {
+  color-scheme: light dark;
+  font-family: system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  padding: 2rem;
+  background: #f7f7f9;
+  color: #1a1a1a;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+nav {
+  margin: 1rem 0;
+  display: flex;
+  gap: 1rem;
+}
+
+nav a {
+  color: #0a66c2;
+  text-decoration: none;
+}
+
+nav a:hover {
+  text-decoration: underline;
+}
+
+main {
+  max-width: 50ch;
+}
+
+code {
+  background: rgba(0, 0, 0, 0.05);
+  padding: 0.1rem 0.25rem;
+  border-radius: 0.25rem;
+}
