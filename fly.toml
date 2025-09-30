@@ -1,0 +1,31 @@
+app = 'landingo'
+primary_region = 'fra'
+kill_signal = 'SIGTERM'
+kill_timeout = "5m"
+
+[build]
+  dockerfile = 'Dockerfile'
+  [build.args]
+    GO_VERSION = '1.24'
+    NODE_VERSION = '22'
+
+[env]
+  PORT = '8080'
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = 'stop'
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ['app']
+
+  [http_service.concurrency]
+  type = 'connections'
+  hard_limit = 1000
+  soft_limit = 1000
+
+[[vm]]
+  memory = '256mb'
+  cpu_kind = 'shared'
+  cpus = 1
