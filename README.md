@@ -1,4 +1,4 @@
-# Landing Page Server
+# Landing Page Server in One Binary
 
 A production-focused Go landing-page server that compiles to a single self-contained binary. Routes, pages, and static assets are driven by a JSON configuration file, packed into the binary with `go:embed`, and served with performance-oriented HTTP defaults.
 

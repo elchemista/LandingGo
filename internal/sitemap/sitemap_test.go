@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"webgo/internal/config"
+	"github.com/elchemista/LandingGo/internal/config"
 )
 
 func TestBuildSitemap(t *testing.T) {

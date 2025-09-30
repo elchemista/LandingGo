@@ -12,11 +12,11 @@ import (
 	"syscall"
 	"time"
 
-	"webgo/build"
-	"webgo/internal/assets"
-	"webgo/internal/config"
-	"webgo/internal/log"
-	"webgo/internal/server"
+	"github.com/elchemista/LandingGo/build"
+	"github.com/elchemista/LandingGo/internal/assets"
+	"github.com/elchemista/LandingGo/internal/config"
+	"github.com/elchemista/LandingGo/internal/log"
+	"github.com/elchemista/LandingGo/internal/server"
 )
 
 const (

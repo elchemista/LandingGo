@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"webgo/internal/assets"
-	"webgo/internal/config"
-	"webgo/internal/contact"
+	"github.com/elchemista/LandingGo/internal/assets"
+	"github.com/elchemista/LandingGo/internal/config"
+	"github.com/elchemista/LandingGo/internal/contact"
 )
 
 func TestServerHandlers(t *testing.T) {

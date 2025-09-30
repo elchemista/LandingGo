@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"webgo/internal/assets"
+	"github.com/elchemista/LandingGo/internal/assets"
 )
 
 func TestCollectAssets(t *testing.T) {

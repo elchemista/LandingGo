@@ -6,7 +6,7 @@ import (
 	"net/url"
 	"time"
 
-	"webgo/internal/config"
+	"github.com/elchemista/LandingGo/internal/config"
 )
 
 const sitemapNS = "http://www.sitemaps.org/schemas/sitemap/0.9"

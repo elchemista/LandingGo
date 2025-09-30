@@ -16,8 +16,8 @@ import (
 
 	"golang.org/x/net/html"
 
-	"webgo/internal/assets"
-	"webgo/internal/config"
+	"github.com/elchemista/LandingGo/internal/assets"
+	"github.com/elchemista/LandingGo/internal/config"
 )
 
 // Run executes the asset packing pipeline.

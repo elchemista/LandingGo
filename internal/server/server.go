@@ -12,15 +12,15 @@ import (
 	"sync"
 	"time"
 
-	"webgo/internal/assets"
-	"webgo/internal/config"
-	"webgo/internal/contact"
-	errorspkg "webgo/internal/errors"
-	"webgo/internal/middleware"
-	"webgo/internal/pages"
-	"webgo/internal/robots"
-	"webgo/internal/router"
-	"webgo/internal/sitemap"
+	"github.com/elchemista/LandingGo/internal/assets"
+	"github.com/elchemista/LandingGo/internal/config"
+	"github.com/elchemista/LandingGo/internal/contact"
+	errorspkg "github.com/elchemista/LandingGo/internal/errors"
+	"github.com/elchemista/LandingGo/internal/middleware"
+	"github.com/elchemista/LandingGo/internal/pages"
+	"github.com/elchemista/LandingGo/internal/robots"
+	"github.com/elchemista/LandingGo/internal/router"
+	"github.com/elchemista/LandingGo/internal/sitemap"
 )
 
 // Server represents the HTTP server runtime.

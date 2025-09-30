@@ -1,4 +1,4 @@
-module github.com/elchemist/webgo
+module github.com/elchemista/LandingGo
 
 go 1.24.0
 

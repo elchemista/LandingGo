@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"webgo/internal/assets/packer"
+	"github.com/elchemista/LandingGo/internal/assets/packer"
 )
 
 func main() {

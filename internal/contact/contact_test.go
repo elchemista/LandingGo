@@ -10,7 +10,7 @@ import (
 
 	mailgun "github.com/mailgun/mailgun-go/v5"
 
-	"webgo/internal/config"
+	"github.com/elchemista/LandingGo/internal/config"
 )
 
 func TestServiceSendSuccess(t *testing.T) {
