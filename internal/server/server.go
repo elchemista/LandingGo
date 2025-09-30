@@ -455,6 +455,20 @@ func (s *Server) writeJSON(w http.ResponseWriter, status int, payload any) {
 	_, _ = w.Write(data)
 }
 
+type compressionDisabler interface {
+	DisableCompression()
+}
+
+func disableCompression(w http.ResponseWriter) {
+	if disabler, ok := w.(compressionDisabler); ok {
+		disabler.DisableCompression()
+	} else {
+		header := w.Header()
+		header.Del("Content-Encoding")
+		header.Del("Content-Length")
+	}
+}
+
 func ensureQuoted(hash string) string {
 	if hash == "" {
 		return ""

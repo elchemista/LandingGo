@@ -174,6 +174,25 @@ func (rw *responseRecorder) Write(p []byte) (int, error) {
 	return rw.ResponseWriter.Write(p)
 }
 
+func (rw *responseRecorder) Close() {
+	if rw.closeFn != nil {
+		rw.closeFn()
+		rw.closeFn = nil
+	}
+}
+
+func (rw *responseRecorder) DisableCompression() {
+	if !rw.compressed {
+		return
+	}
+	rw.compressed = false
+	rw.Close()
+	rw.writer = nil
+	header := rw.Header()
+	header.Del("Content-Encoding")
+	header.Del("Content-Length")
+}
+
 func randomID() string {
 	var b [16]byte
 	if _, err := rand.Read(b[:]); err != nil {
