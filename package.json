@@ -1,16 +1,16 @@
 {
-  "name": "webgo-assets",
+  "name": "landingo",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "npm run build:css && npm run build:js",
-    "build:css": "tailwindcss -c assets/tailwind.config.js -i assets/src/styles.css -o web/static/app.css --minify",
+    "build:css": "npx tailwindcss -c assets/tailwind.config.js -i assets/src/styles.css -o web/static/app.css --minify",
     "build:js": "esbuild assets/src/app.js --bundle --format=esm --outfile=web/static/app.js --minify"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.20",
+    "@tailwindcss/cli": "^4.1.13",
     "esbuild": "^0.25.10",
-    "postcss": "^8.4.41",
-    "tailwindcss": "^3.4.14"
+    "tailwindcss": "^4.1.13",
+    "daisyui": "^5.1.25"
   }
 }
