@@ -1,7 +1,7 @@
 {
   "site": {
-    "base_url": "https://example.com",
-    "robots_policy": "User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml"
+    "base_url": "https://landingo.fly.dev",
+    "robots_policy": "User-agent: *\nAllow: /\nSitemap: https://landingo.fly.dev/sitemap.xml\n"
   },
   "routes": [
     {
@@ -34,7 +34,7 @@
     "subject": "New website enquiry",
     "mailgun": {
       "domain": "mg.example.com",
-      "api_key": "key-mailgun-api-key"
+      "api_key": ""
     }
   }
 }

@@ -250,7 +250,7 @@ func (c *Config) validateContact(contactRoute bool) error {
 		return nil
 	}
 
-	if !contact.Enabled() {
+	if contact.Recipient == "" || contact.From == "" || contact.Mailgun.Domain == "" {
 		return errors.New("contact configuration is incomplete")
 	}
 
@@ -344,6 +344,13 @@ func defaultTitleFromPage(page string) string {
 func (c *Config) WithLoadedTime(t time.Time) {
 	if c != nil {
 		c.loadedAt = t
+	}
+}
+
+// WithSource sets the configuration source identifier for diagnostics.
+func (c *Config) WithSource(src string) {
+	if c != nil {
+		c.source = src
 	}
 }
 

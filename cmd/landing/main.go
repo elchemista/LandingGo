@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"flag"
+	"fmt"
 	"io/fs"
 	"net/http"
 	"os"
@@ -21,7 +22,7 @@ import (
 
 const (
 	defaultAddr   = ":8080"
-	defaultConfig = "config.example.json"
+	defaultConfig = "config.prod.json"
 	webRoot       = "web"
 )
 
@@ -36,10 +37,14 @@ func main() {
 		os.Exit(1)
 	}
 
-	conf, err := config.Load(cfg.configPath)
+	conf, configSource, err := loadConfig(cfg.configPath)
 	if err != nil {
 		logger.Error("load config", "error", err)
 		os.Exit(1)
+	}
+
+	if configSource != "" {
+		logger.Info("configuration loaded", "source", configSource)
 	}
 
 	if err := conf.Validate(func(name string) bool { return src.PageExists(name) }); err != nil {
@@ -165,6 +170,54 @@ func envBool(key string, fallback bool) bool {
 		return false
 	default:
 		return fallback
+	}
+}
+
+func loadConfig(path string) (*config.Config, string, error) {
+	cleanPath := strings.TrimSpace(path)
+	if cleanPath != "" {
+		conf, err := config.Load(cleanPath)
+		if err == nil {
+			applyRuntimeOverrides(conf)
+			return conf, cleanPath, nil
+		}
+
+		if !errors.Is(err, os.ErrNotExist) {
+			return nil, "", err
+		}
+	}
+
+	embedded := build.EmbeddedConfig()
+	if len(embedded) == 0 {
+		if cleanPath != "" {
+			return nil, "", fmt.Errorf("config %s not found and no embedded configuration present", cleanPath)
+		}
+		return nil, "", errors.New("embedded configuration is missing")
+	}
+
+	conf, err := config.Parse(embedded)
+	if err != nil {
+		return nil, "", fmt.Errorf("parse embedded config: %w", err)
+	}
+
+	conf.WithSource("embedded")
+	conf.WithLoadedTime(time.Now().UTC())
+	applyRuntimeOverrides(conf)
+
+	if cleanPath != "" {
+		return conf, fmt.Sprintf("embedded (fallback from %s)", cleanPath), nil
+	}
+
+	return conf, "embedded", nil
+}
+
+func applyRuntimeOverrides(cfg *config.Config) {
+	if cfg == nil {
+		return
+	}
+
+	if apiKey := strings.TrimSpace(os.Getenv("MAILGUN_API_KEY")); apiKey != "" {
+		cfg.Contact.Mailgun.APIKey = apiKey
 	}
 }
 

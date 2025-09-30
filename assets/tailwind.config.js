@@ -1,17 +1,10 @@
 /** @type {import('tailwindcss').Config} */
+const path = require("path");
+
 module.exports = {
   content: [
-    "../web/pages/**/*.{html,tmpl}",
+    path.join(__dirname, "web/pages/**/*.{html,tmpl}"),
   ],
-  theme: {
-    extend: {
-      colors: {
-        brand: {
-          DEFAULT: "#0a66c2",
-          dark: "#155eab",
-        },
-      },
-    },
-  },
+  theme: {},
   plugins: [],
 };

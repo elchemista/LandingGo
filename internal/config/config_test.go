@@ -8,7 +8,7 @@ import (
 
 func TestValidateSuccess(t *testing.T) {
 	cfg := &Config{
-		Site:   Site{BaseURL: "https://example.com"},
+		Site:   Site{BaseURL: "http://localhost:8080"},
 		Routes: []Route{{Path: "/", Page: "home.html", Title: "Home"}},
 		Headers: map[string]map[string]string{
 			"/": {"cache-control": "public, max-age=60"},
@@ -33,7 +33,7 @@ func TestValidateSuccess(t *testing.T) {
 
 func TestValidateDuplicateRoute(t *testing.T) {
 	cfg := &Config{
-		Site:   Site{BaseURL: "https://example.com"},
+		Site:   Site{BaseURL: "http://localhost:8080"},
 		Routes: []Route{{Path: "/", Page: "home.html"}, {Path: "/", Page: "about.html"}},
 	}
 
@@ -45,7 +45,7 @@ func TestValidateDuplicateRoute(t *testing.T) {
 
 func TestValidateMissingPage(t *testing.T) {
 	cfg := &Config{
-		Site:   Site{BaseURL: "https://example.com"},
+		Site:   Site{BaseURL: "http://localhost:8080"},
 		Routes: []Route{{Path: "/", Page: "missing.html"}},
 	}
 
@@ -69,7 +69,7 @@ func TestValidateBaseURL(t *testing.T) {
 
 func TestValidateContactRequiresRoute(t *testing.T) {
 	cfg := &Config{
-		Site:   Site{BaseURL: "https://example.com"},
+		Site:   Site{BaseURL: "http://localhost:8080"},
 		Routes: []Route{{Path: "/", Page: "home.html"}},
 		Contact: Contact{
 			Recipient: "owner@example.com",
@@ -88,7 +88,7 @@ func TestValidateContactRequiresRoute(t *testing.T) {
 
 func TestValidateContactIncomplete(t *testing.T) {
 	cfg := &Config{
-		Site:   Site{BaseURL: "https://example.com"},
+		Site:   Site{BaseURL: "http://localhost:8080"},
 		Routes: []Route{{Path: "/", Page: "home.html"}, {Path: "/contact", Page: "contact.html"}},
 		Contact: Contact{
 			Recipient: "owner@example.com",
@@ -104,9 +104,27 @@ func TestValidateContactIncomplete(t *testing.T) {
 	}
 }
 
+func TestValidateContactMissingAPIKeyAllowed(t *testing.T) {
+	cfg := &Config{
+		Site:   Site{BaseURL: "http://localhost:8080"},
+		Routes: []Route{{Path: "/", Page: "home.html"}, {Path: "/contact", Page: "contact.html"}},
+		Contact: Contact{
+			Recipient: "owner@example.com",
+			From:      "no-reply@example.com",
+			Mailgun:   Mailgun{Domain: "mg.example.com", APIKey: ""},
+		},
+	}
+	cfg.WithLoadedTime(time.Now())
+	_ = cfg.normalize()
+
+	if err := cfg.Validate(func(name string) bool { return name == "home.html" || name == "contact.html" }); err != nil {
+		t.Fatalf("unexpected validation error: %v", err)
+	}
+}
+
 func TestValidateContactSuccess(t *testing.T) {
 	cfg := &Config{
-		Site:   Site{BaseURL: "https://example.com"},
+		Site:   Site{BaseURL: "http://localhost:8080"},
 		Routes: []Route{{Path: "/", Page: "home.html"}, {Path: "/contact", Page: "contact.html"}},
 		Contact: Contact{
 			Recipient: "owner@example.com",

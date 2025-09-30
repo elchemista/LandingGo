@@ -1,6 +1,7 @@
 package packer
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"path/filepath"
@@ -90,6 +91,16 @@ func TestRunGeneratesManifestAndEmbed(t *testing.T) {
 
 	if _, err := os.Stat(filepath.Join(buildDir, "embedded.go")); err != nil {
 		t.Fatalf("embedded.go not generated: %v", err)
+	}
+
+	configSource := filepath.Join(buildDir, "config_data.go")
+	src, err := os.ReadFile(configSource)
+	if err != nil {
+		t.Fatalf("read config_data.go: %v", err)
+	}
+
+	if !bytes.Contains(src, []byte("base_url")) {
+		t.Fatalf("config_data.go missing base_url field: %s", src)
 	}
 }
 

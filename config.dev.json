@@ -1,0 +1,40 @@
+{
+    "site": {
+        "base_url": "http://localhost:8080",
+        "robots_policy": "User-agent: *\nAllow: /\nSitemap: http://localhost:8080/sitemap.xml\n"
+    },
+    "routes": [
+        {
+            "path": "/",
+            "page": "home.html",
+            "title": "Home"
+        },
+        {
+            "path": "/about",
+            "page": "about.html",
+            "title": "About"
+        },
+        {
+            "path": "/contact",
+            "page": "contact.html",
+            "title": "Contact"
+        }
+    ],
+    "headers": {
+        "/": {
+            "Cache-Control": "public, max-age=300"
+        },
+        "/about": {
+            "Cache-Control": "public, max-age=300"
+        }
+    },
+    "contact": {
+        "recipient": "owners@example.com",
+        "from": "Landing Page <no-reply@example.com>",
+        "subject": "New website enquiry",
+        "mailgun": {
+            "domain": "mg.example.com",
+            "api_key": ""
+        }
+    }
+}

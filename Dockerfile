@@ -23,7 +23,8 @@ RUN npm ci
 
 COPY . .
 
-ARG CONFIG_PATH=config.example.json
+ARG CONFIG_PATH=config.prod.json
+RUN make assets
 RUN make build CONFIG=${CONFIG_PATH} BINARY=/out/landing
 
 FROM gcr.io/distroless/base-debian12 AS runner

@@ -104,7 +104,7 @@ Configuration lives under the top-level `contact` key:
   "subject": "New website enquiry",
   "mailgun": {
     "domain": "mg.example.com",
-    "api_key": "key-your-mailgun-api-key"
+    "api_key": ""
   }
 }
 ```
@@ -113,9 +113,9 @@ Configuration lives under the top-level `contact` key:
 - `from` is the Mailgun-verified sender shown to recipients (it can include a display name).
 - `subject` is optional; it defaults to `New contact from <name>` if omitted.
 - `mailgun.domain` is the Mailgun-supplied sending domain (e.g. `mg.example.com`).
-- `mailgun.api_key` is the private API key with permission to send mail.
+- `mailgun.api_key` can be left blank; the server reads the private key from the `MAILGUN_API_KEY` environment variable at runtime.
 
-In production builds the server creates a Mailgun client with those credentials and queues the message. In `--dev` mode the contact handler remains active, but without a `contact` block POST requests return `503 Service Unavailable` so you can work without real credentials. Omit the `contact` block entirely to disable outbound email.
+In production builds the server creates a Mailgun client using the configuration plus the `MAILGUN_API_KEY` environment variable; set that secret via Fly.io or your process supervisor. In `--dev` mode the contact handler remains active, but without a `contact` block POST requests return `503 Service Unavailable` so you can work without real credentials. Omit the `contact` block entirely to disable outbound email.
 
 For deployments keep API keys out of version control—inject them via environment-specific config files or secret management tooling, then run `make pack && make build` to bake the configuration into the binary.
 

@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
-      PACK_CONFIG: ${{ vars.PACK_CONFIG || 'config.example.json' }}
+      PACK_CONFIG: ${{ vars.PACK_CONFIG || 'config.prod.json' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -30,6 +30,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Build assets
+        run: make assets
 
       - name: Build single binary
         run: make build CONFIG="$PACK_CONFIG"
