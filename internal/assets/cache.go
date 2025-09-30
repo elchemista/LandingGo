@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"io/fs"
 	"mime"
+	"net/http"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -129,9 +130,18 @@ func (c *Cache) Get(path string) (*CachedAsset, error) {
 
 	if asset.MIME == "" {
 		ext := strings.ToLower(filepath.Ext(path))
-		asset.MIME = mime.TypeByExtension(ext)
-		if asset.MIME == "" {
-			asset.MIME = fallbackMIME(ext)
+		if mt := mime.TypeByExtension(ext); mt != "" {
+			asset.MIME = mt
+		} else if mt := fallbackMIME(ext); mt != "" {
+			asset.MIME = mt
+		} else {
+			asset.MIME = http.DetectContentType(body)
+		}
+	}
+
+	if asset.MIME == "" || asset.MIME == "application/octet-stream" {
+		if sniffed := http.DetectContentType(body); sniffed != "" && sniffed != "application/octet-stream" {
+			asset.MIME = sniffed
 		}
 	}
 

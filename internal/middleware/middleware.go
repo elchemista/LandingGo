@@ -138,18 +138,11 @@ func Gzip(level int) func(http.Handler) http.Handler {
 			h.Set("Content-Encoding", "gzip")
 			h.Add("Vary", "Accept-Encoding")
 
-			recorder := &responseRecorder{ResponseWriter: w, status: http.StatusOK, writer: gw, compressed: true}
-			recorder.closeFn = func() {
-				gw.Close()
-				pool.Put(gw)
-			}
+			recorder := &responseRecorder{ResponseWriter: w, status: http.StatusOK, writer: gw, stripLength: true}
 
 			defer func() {
-				if rec := recover(); rec != nil {
-					recorder.Close()
-					panic(rec)
-				}
-				recorder.Close()
+				gw.Close()
+				pool.Put(gw)
 			}()
 
 			next.ServeHTTP(recorder, r)
@@ -160,11 +153,9 @@ func Gzip(level int) func(http.Handler) http.Handler {
 // responseRecorder captures status and optionally wraps the writer.
 type responseRecorder struct {
 	http.ResponseWriter
-	status          int
-	writer          io.Writer
-	closeFn         func()
-	compressed      bool
-	headerSanitized bool
+	status      int
+	writer      io.Writer
+	stripLength bool
 }
 
 func (rw *responseRecorder) WriteHeader(code int) {
@@ -174,33 +165,13 @@ func (rw *responseRecorder) WriteHeader(code int) {
 
 func (rw *responseRecorder) Write(p []byte) (int, error) {
 	if rw.writer != nil {
-		if rw.compressed && !rw.headerSanitized {
-			rw.headerSanitized = true
-			header := rw.Header()
-			header.Del("Content-Length")
+		if rw.stripLength {
+			rw.stripLength = false
+			rw.Header().Del("Content-Length")
 		}
 		return rw.writer.Write(p)
 	}
 	return rw.ResponseWriter.Write(p)
-}
-
-func (rw *responseRecorder) Close() {
-	if rw.closeFn != nil {
-		rw.closeFn()
-		rw.closeFn = nil
-	}
-}
-
-func (rw *responseRecorder) DisableCompression() {
-	if !rw.compressed {
-		return
-	}
-	rw.compressed = false
-	rw.Close()
-	rw.writer = nil
-	header := rw.Header()
-	header.Del("Content-Encoding")
-	header.Del("Content-Length")
 }
 
 func randomID() string {
