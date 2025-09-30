@@ -1,4 +1,4 @@
-module webgo
+module github.com/elchemist/webgo
 
 go 1.24.0
 
