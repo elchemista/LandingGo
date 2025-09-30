@@ -344,8 +344,7 @@ func (s *Server) writeErrorPage(w http.ResponseWriter, r *http.Request, pageName
 	}
 
 	header := w.Header()
-	header.Del("Content-Encoding")
-	header.Del("Content-Length")
+	disableCompression(w)
 	header.Set("Content-Type", "text/html; charset=utf-8")
 	header.Set("Cache-Control", "no-store, max-age=0")
 	w.WriteHeader(status)
@@ -450,13 +449,26 @@ func (s *Server) writeJSON(w http.ResponseWriter, status int, payload any) {
 	}
 
 	header := w.Header()
-	header.Del("Content-Encoding")
-	header.Del("Content-Length")
+	disableCompression(w)
 	header.Set("Content-Type", "application/json")
 	header.Set("Cache-Control", "no-store, max-age=0")
 
 	w.WriteHeader(status)
 	_, _ = w.Write(data)
+}
+
+type compressionDisabler interface {
+	DisableCompression()
+}
+
+func disableCompression(w http.ResponseWriter) {
+	if disabler, ok := w.(compressionDisabler); ok {
+		disabler.DisableCompression()
+	} else {
+		header := w.Header()
+		header.Del("Content-Encoding")
+		header.Del("Content-Length")
+	}
 }
 
 func ensureQuoted(hash string) string {
