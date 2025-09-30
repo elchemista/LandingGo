@@ -2,6 +2,33 @@
 
 A production-focused Go landing-page server that compiles to a single self-contained binary. Routes, pages, and static assets are driven by a JSON configuration file, packed into the binary with `go:embed`, and served with performance-oriented HTTP defaults.
 
+## Why this exists
+
+Clients often ask me for a **simple landing page**. I *could* spin it up on Deno Deploy / Vercel / Netlify with Svelte or Next.js—and I’ve done that plenty. But after a few projects, I kept migrating those sites to something **simpler and faster**: a tiny, memory-efficient **Go web server**.
+
+I run it as a **single binary**, drop it on a **$5 VPS** or a **Fly.io** container, and… that’s it. No Node runtime, no framework updates, no build pipeline surprises, no cold starts. Just **predictable performance**, tiny memory, and fewer moving parts I need to babysit.
+
+### TL;DR
+
+* **Simplicity wins:** one binary, no complex runtime or adapter stack.
+* **Speed & reliability:** server-rendered HTML, assets embedded, zero cold start.
+* **Low cost:** runs comfortably on a $5 droplet or the smallest Fly.io machine.
+* **Less to maintain:** fewer dependencies = fewer breakages.
+* **Portability:** copy the binary anywhere; same behavior, same perf.
+
+### When this approach shines
+
+* You need a **fast, stable landing page** with a contact form, sitemap/robots, and basic routes.
+* You want to **set it and forget it**—no constant framework churn.
+* You care about **TTFB and tiny memory** more than heavy client-side interactivity.
+
+### When not to use it
+
+* You need a complex SPA, heavy client hydration, or a large UI ecosystem (then Svelte/Next can be a better fit).
+
+For my use case—and many client landing pages—**Go is simpler**, **cheaper**, and **faster**. So I built this project to make that path easy and repeatable.
+
+
 ## Features
 
 - Config-driven routing with automatic validation.
