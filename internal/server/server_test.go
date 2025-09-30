@@ -1,9 +1,11 @@
 package server
 
 import (
+	"context"
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -12,6 +14,7 @@ import (
 
 	"webgo/internal/assets"
 	"webgo/internal/config"
+	"webgo/internal/contact"
 )
 
 func TestServerHandlers(t *testing.T) {
@@ -133,6 +136,71 @@ func TestServerHandlers(t *testing.T) {
 	})
 }
 
+func TestContactSubmit(t *testing.T) {
+	tdir := t.TempDir()
+	webDir := filepath.Join(tdir, "web")
+
+	mustWrite(t, filepath.Join(webDir, "pages", "home.html"), `<!doctype html><html><body><h1>Home</h1></body></html>`)
+	mustWrite(t, filepath.Join(webDir, "pages", "contact.html"), `<!doctype html><html><body><form></form></body></html>`)
+	mustWrite(t, filepath.Join(webDir, "static", "app.css"), "")
+
+	cfg := &config.Config{
+		Site: config.Site{BaseURL: "https://example.test"},
+		Routes: []config.Route{
+			{Path: "/", Page: "home.html", Title: "Home"},
+			{Path: "/contact", Page: "contact.html", Title: "Contact"},
+		},
+		Contact: config.Contact{
+			Recipient: "owners@example.test",
+			From:      "no-reply@example.test",
+			Mailgun:   config.Mailgun{Domain: "mg.example.test", APIKey: "key"},
+		},
+	}
+	cfg.WithLoadedTime(time.Now())
+
+	if err := cfg.Validate(func(name string) bool { return name == "home.html" || name == "contact.html" }); err != nil {
+		t.Fatalf("validate config: %v", err)
+	}
+
+	src, err := assets.NewDisk(webDir)
+	if err != nil {
+		t.Fatalf("new disk source: %v", err)
+	}
+
+	srv, err := New(cfg, src, nil, true)
+	if err != nil {
+		t.Fatalf("new server: %v", err)
+	}
+
+	fake := &fakeContactSender{enabled: true}
+	srv.contact = fake
+
+	ts := httptest.NewServer(srv.Handler())
+	t.Cleanup(ts.Close)
+
+	resp, err := http.PostForm(ts.URL+"/contact", url.Values{
+		"name":    {"Jane"},
+		"email":   {"jane@example.test"},
+		"message": {"Hello"},
+	})
+	if err != nil {
+		t.Fatalf("post contact: %v", err)
+	}
+	t.Cleanup(func() { resp.Body.Close() })
+
+	if resp.StatusCode != http.StatusAccepted {
+		t.Fatalf("expected 202, got %d", resp.StatusCode)
+	}
+
+	if len(fake.messages) != 1 {
+		t.Fatalf("expected 1 message, got %d", len(fake.messages))
+	}
+
+	if fake.messages[0].Email != "jane@example.test" {
+		t.Fatalf("unexpected email: %+v", fake.messages[0])
+	}
+}
+
 func setupTestEnvironment(t *testing.T) (*config.Config, *assets.Source) {
 	t.Helper()
 	tdir := t.TempDir()
@@ -162,6 +230,22 @@ func setupTestEnvironment(t *testing.T) (*config.Config, *assets.Source) {
 	}
 
 	return cfg, src
+}
+
+type fakeContactSender struct {
+	enabled  bool
+	err      error
+	messages []contact.Message
+}
+
+func (f *fakeContactSender) Enabled() bool { return f != nil && f.enabled }
+
+func (f *fakeContactSender) Send(_ context.Context, msg contact.Message) error {
+	if f.err != nil {
+		return f.err
+	}
+	f.messages = append(f.messages, msg)
+	return nil
 }
 
 func mustWrite(t *testing.T, path, content string) {

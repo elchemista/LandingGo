@@ -7,6 +7,7 @@ import (
 	"encoding/hex"
 	"io"
 	"log/slog"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -81,14 +82,24 @@ func Logging(logger *slog.Logger) func(http.Handler) http.Handler {
 		return func(next http.Handler) http.Handler { return next }
 	}
 
+	skip := func(path string) bool {
+		return strings.HasPrefix(path, "/static/")
+	}
+
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			if skip(r.URL.Path) {
+				next.ServeHTTP(w, r)
+				return
+			}
+
 			start := time.Now()
 			recorder := &responseRecorder{ResponseWriter: w, status: http.StatusOK}
 
 			next.ServeHTTP(recorder, r)
 
 			logger.Info("request completed",
+				"ip", clientIP(r),
 				"method", r.Method,
 				"path", r.URL.Path,
 				"status", recorder.status,
@@ -168,4 +179,22 @@ func randomID() string {
 		return hex.EncodeToString([]byte(time.Now().Format("150405.000")))
 	}
 	return hex.EncodeToString(b[:])
+}
+
+func clientIP(r *http.Request) string {
+	if r == nil {
+		return ""
+	}
+	if fwd := r.Header.Get("X-Forwarded-For"); fwd != "" {
+		parts := strings.Split(fwd, ",")
+		return strings.TrimSpace(parts[0])
+	}
+	if real := r.Header.Get("X-Real-IP"); real != "" {
+		return strings.TrimSpace(real)
+	}
+	host, _, err := net.SplitHostPort(r.RemoteAddr)
+	if err != nil {
+		return r.RemoteAddr
+	}
+	return host
 }

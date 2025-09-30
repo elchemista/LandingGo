@@ -1,14 +1,19 @@
 GO ?= go
+NPM ?= npm
 CONFIG ?= config.example.json
 ADDR ?= :8080
 BINARY ?= bin/landing
 
-.PHONY: dev pack build test clean fmt
+.PHONY: dev pack build test clean fmt assets
+
+assets:
+	$(NPM) run build
+
 
 dev:
 	$(GO) run ./cmd/landing --dev --config=$(CONFIG) --addr=$(ADDR)
 
-pack:
+pack: assets
 	$(GO) run ./cmd/pack --config=$(CONFIG) --web=web --build=build
 
 build: pack
@@ -22,6 +27,7 @@ clean:
 	rm -rf bin
 	rm -rf build/public
 	rm -f build/embedded.go
+	rm -rf node_modules
 
 fmt:
 	gofmt -w $$(find . -type f -name '*.go' -not -path './vendor/*')

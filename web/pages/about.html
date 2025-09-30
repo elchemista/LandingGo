@@ -6,9 +6,15 @@
   <link rel="canonical" href="{{.BaseURL}}{{.RoutePath}}">
   <link rel="stylesheet" href="/static/app.css">
 </head>
-<body>
-  <h1>{{.Title}}</h1>
-  <p>We build fast Go services with embedded assets.</p>
-  <p><a href="/">Back home</a></p>
+<body class="space-y-8">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-bold">{{.Title}}</h1>
+    <p class="text-slate-600 dark:text-slate-300">We build fast Go services with embedded assets.</p>
+  </header>
+  <main class="max-w-prose space-y-4">
+    <p>Everything you see here ships as a single binary with no external runtime dependencies.</p>
+    <a class="nav-link" href="/">Back home</a>
+  </main>
+  <script type="module" src="/static/app.js"></script>
 </body>
 </html>

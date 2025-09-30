@@ -18,6 +18,7 @@ type Config struct {
 	Site    Site                         `json:"site"`
 	Routes  []Route                      `json:"routes"`
 	Headers map[string]map[string]string `json:"headers"`
+	Contact Contact                      `json:"contact"`
 
 	loadedAt time.Time
 	source   string
@@ -27,6 +28,39 @@ type Config struct {
 type Site struct {
 	BaseURL      string `json:"base_url"`
 	RobotsPolicy string `json:"robots_policy"`
+}
+
+// Contact describes contact-form delivery settings.
+type Contact struct {
+	Recipient string  `json:"recipient"`
+	From      string  `json:"from"`
+	Subject   string  `json:"subject"`
+	Mailgun   Mailgun `json:"mailgun"`
+}
+
+// Mailgun holds credentials for Mailgun email delivery.
+type Mailgun struct {
+	Domain string `json:"domain"`
+	APIKey string `json:"api_key"`
+}
+
+func (c *Contact) normalize() {
+	if c == nil {
+		return
+	}
+	c.Recipient = strings.TrimSpace(c.Recipient)
+	c.From = strings.TrimSpace(c.From)
+	c.Subject = strings.TrimSpace(c.Subject)
+	c.Mailgun.Domain = strings.TrimSpace(c.Mailgun.Domain)
+	c.Mailgun.APIKey = strings.TrimSpace(c.Mailgun.APIKey)
+}
+
+func (c Contact) Enabled() bool {
+	return c.Recipient != "" && c.From != "" && c.Mailgun.Domain != "" && c.Mailgun.APIKey != ""
+}
+
+func (c Contact) isZero() bool {
+	return c.Recipient == "" && c.From == "" && c.Subject == "" && c.Mailgun.Domain == "" && c.Mailgun.APIKey == ""
 }
 
 // Route maps an HTTP path to a template page.
@@ -96,6 +130,7 @@ func (c *Config) normalize() error {
 	}
 
 	c.Headers = normalized
+	c.Contact.normalize()
 
 	return nil
 }
@@ -163,6 +198,7 @@ func (c *Config) Validate(fsExists func(name string) bool) error {
 	}
 
 	seenPaths := make(map[string]struct{}, len(c.Routes))
+	contactRoute := false
 
 	for i := range c.Routes {
 		rt := &c.Routes[i]
@@ -195,6 +231,43 @@ func (c *Config) Validate(fsExists func(name string) bool) error {
 		if rt.Title == "" {
 			rt.Title = defaultTitleFromPage(rt.Page)
 		}
+
+		if rt.Path == "/contact" {
+			contactRoute = true
+		}
+	}
+
+	if err := c.validateContact(contactRoute); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) validateContact(contactRoute bool) error {
+	contact := c.Contact
+	if contact.isZero() {
+		return nil
+	}
+
+	if !contact.Enabled() {
+		return errors.New("contact configuration is incomplete")
+	}
+
+	if !contactRoute {
+		return errors.New("contact route '/contact' must be defined when contact configuration is provided")
+	}
+
+	if !strings.Contains(contact.Recipient, "@") {
+		return errors.New("contact.recipient must be a valid email address")
+	}
+
+	if !strings.Contains(contact.From, "@") {
+		return errors.New("contact.from must be a valid email address")
+	}
+
+	if strings.Contains(contact.Mailgun.Domain, "://") {
+		return errors.New("contact.mailgun.domain must not include a URL scheme")
 	}
 
 	return nil

@@ -66,3 +66,58 @@ func TestValidateBaseURL(t *testing.T) {
 		t.Fatalf("expected base_url error, got %v", err)
 	}
 }
+
+func TestValidateContactRequiresRoute(t *testing.T) {
+	cfg := &Config{
+		Site:   Site{BaseURL: "https://example.com"},
+		Routes: []Route{{Path: "/", Page: "home.html"}},
+		Contact: Contact{
+			Recipient: "owner@example.com",
+			From:      "no-reply@example.com",
+			Mailgun:   Mailgun{Domain: "mg.example.com", APIKey: "abc"},
+		},
+	}
+	cfg.WithLoadedTime(time.Now())
+	_ = cfg.normalize()
+
+	err := cfg.Validate(func(string) bool { return true })
+	if err == nil || !strings.Contains(err.Error(), "contact route") {
+		t.Fatalf("expected contact route error, got %v", err)
+	}
+}
+
+func TestValidateContactIncomplete(t *testing.T) {
+	cfg := &Config{
+		Site:   Site{BaseURL: "https://example.com"},
+		Routes: []Route{{Path: "/", Page: "home.html"}, {Path: "/contact", Page: "contact.html"}},
+		Contact: Contact{
+			Recipient: "owner@example.com",
+			Mailgun:   Mailgun{Domain: "mg.example.com", APIKey: ""},
+		},
+	}
+	cfg.WithLoadedTime(time.Now())
+	_ = cfg.normalize()
+
+	err := cfg.Validate(func(name string) bool { return name == "home.html" || name == "contact.html" })
+	if err == nil || !strings.Contains(err.Error(), "incomplete") {
+		t.Fatalf("expected incomplete contact error, got %v", err)
+	}
+}
+
+func TestValidateContactSuccess(t *testing.T) {
+	cfg := &Config{
+		Site:   Site{BaseURL: "https://example.com"},
+		Routes: []Route{{Path: "/", Page: "home.html"}, {Path: "/contact", Page: "contact.html"}},
+		Contact: Contact{
+			Recipient: "owner@example.com",
+			From:      "no-reply@example.com",
+			Mailgun:   Mailgun{Domain: "mg.example.com", APIKey: "abc"},
+		},
+	}
+	cfg.WithLoadedTime(time.Now())
+	_ = cfg.normalize()
+
+	if err := cfg.Validate(func(name string) bool { return name == "home.html" || name == "contact.html" }); err != nil {
+		t.Fatalf("expected contact validation success, got %v", err)
+	}
+}

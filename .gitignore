@@ -1,6 +1,9 @@
 bin/
 build/embedded.go
 build/public/
+node_modules/
+web/static/app.css
+web/static/app.js
 *.log
 *.out
 *.tmp

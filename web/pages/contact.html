@@ -6,9 +6,27 @@
   <link rel="canonical" href="{{.BaseURL}}{{.RoutePath}}">
   <link rel="stylesheet" href="/static/app.css">
 </head>
-<body>
-  <h1>{{.Title}}</h1>
-  <p>Email us at <a href="mailto:team@example.com">team@example.com</a>.</p>
-  <p>Server time: {{.NowRFC3339}}</p>
+<body class="space-y-8">
+  <header class="space-y-2">
+    <h1 class="text-3xl font-bold">{{.Title}}</h1>
+    <p class="text-slate-600 dark:text-slate-300">We usually respond within one business day. All fields are required.</p>
+  </header>
+  <form id="contact-form" action="/contact" method="post" class="grid gap-6" novalidate>
+    <div class="form-field">
+      <label for="contact-name" class="font-semibold">Name</label>
+      <input id="contact-name" name="name" type="text" autocomplete="name" required class="input-control">
+    </div>
+    <div class="form-field">
+      <label for="contact-email" class="font-semibold">Email</label>
+      <input id="contact-email" name="email" type="email" autocomplete="email" required class="input-control">
+    </div>
+    <div class="form-field">
+      <label for="contact-message" class="font-semibold">Message</label>
+      <textarea id="contact-message" name="message" rows="6" required class="input-control"></textarea>
+    </div>
+    <button type="submit" class="button-primary">Send Message</button>
+  </form>
+  <p id="contact-feedback" role="status" aria-live="polite" class="status-message"></p>
+  <script type="module" src="/static/app.js"></script>
 </body>
 </html>

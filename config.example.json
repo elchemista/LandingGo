@@ -1,7 +1,7 @@
 {
   "site": {
-    "base_url": "http://localhost:8080",
-    "robots_policy": "User-agent: *\nAllow: /\nSitemap: http://localhost:8080/sitemap.xml"
+    "base_url": "https://example.com",
+    "robots_policy": "User-agent: *\nAllow: /\nSitemap: https://example.com/sitemap.xml"
   },
   "routes": [
     {
@@ -26,6 +26,15 @@
     },
     "/about": {
       "Cache-Control": "public, max-age=300"
+    }
+  },
+  "contact": {
+    "recipient": "owners@example.com",
+    "from": "Landing Page <no-reply@example.com>",
+    "subject": "New website enquiry",
+    "mailgun": {
+      "domain": "mg.example.com",
+      "api_key": "key-mailgun-api-key"
     }
   }
 }

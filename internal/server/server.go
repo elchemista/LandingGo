@@ -2,6 +2,7 @@ package server
 
 import (
 	"crypto/sha256"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -13,6 +14,7 @@ import (
 
 	"webgo/internal/assets"
 	"webgo/internal/config"
+	"webgo/internal/contact"
 	errorspkg "webgo/internal/errors"
 	"webgo/internal/middleware"
 	"webgo/internal/pages"
@@ -36,6 +38,8 @@ type Server struct {
 
 	sitemap []byte
 	robots  []byte
+
+	contact contact.Sender
 
 	pageCache  sync.Map // route path -> *pageEntry
 	errorCache sync.Map // key -> []byte
@@ -80,6 +84,11 @@ func New(cfg *config.Config, src *assets.Source, logger *slog.Logger, dev bool) 
 	}
 	robotsPayload = append(robotsPayload, '\n')
 
+	var contactSender contact.Sender
+	if cfg.Contact.Enabled() {
+		contactSender = contact.NewService(cfg.Contact, nil)
+	}
+
 	srv := &Server{
 		cfg:        cfg,
 		source:     src,
@@ -90,6 +99,7 @@ func New(cfg *config.Config, src *assets.Source, logger *slog.Logger, dev bool) 
 		assetCache: assetCache,
 		sitemap:    sitemapPayload,
 		robots:     robotsPayload,
+		contact:    contactSender,
 	}
 
 	srv.registerRoutes(routes)
@@ -113,9 +123,22 @@ func (s *Server) registerRoutes(routes []config.Route) {
 
 	for _, route := range routes {
 		route := route
-		s.router.Handle(route.Path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			s.servePage(w, r, route)
-		}))
+		})
+
+		if route.Path == "/contact" {
+			handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.Method == http.MethodPost {
+					s.handleContactSubmit(w, r)
+					return
+				}
+				s.servePage(w, r, route)
+			})
+		}
+
+		s.router.Handle(route.Path, handler)
 	}
 
 	s.router.NotFound(http.HandlerFunc(s.serveNotFound))
@@ -158,6 +181,48 @@ func (s *Server) servePage(w http.ResponseWriter, r *http.Request, route config.
 
 	s.writeStatus(w, http.StatusOK)
 	_, _ = w.Write(entry.Body)
+}
+
+func (s *Server) handleContactSubmit(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.Header().Set("Allow", "GET, HEAD, POST")
+		s.writeStatus(w, http.StatusMethodNotAllowed)
+		return
+	}
+
+	if err := r.ParseForm(); err != nil {
+		s.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "invalid form data"})
+		return
+	}
+
+	name := strings.TrimSpace(r.FormValue("name"))
+	email := strings.TrimSpace(r.FormValue("email"))
+	message := strings.TrimSpace(r.FormValue("message"))
+
+	if name == "" || email == "" || message == "" {
+		s.writeJSON(w, http.StatusBadRequest, map[string]string{"error": "name, email, and message are required"})
+		return
+	}
+
+	if s.contact == nil || !s.contact.Enabled() {
+		s.writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "contact form disabled"})
+		return
+	}
+
+	err := s.contact.Send(r.Context(), contact.Message{
+		Name:  name,
+		Email: email,
+		Body:  message,
+	})
+	if err != nil {
+		if s.logger != nil {
+			s.logger.Error("contact send", "error", err)
+		}
+		s.writeJSON(w, http.StatusBadGateway, map[string]string{"error": "failed to send message"})
+		return
+	}
+
+	s.writeJSON(w, http.StatusAccepted, map[string]string{"status": "sent"})
 }
 
 func (s *Server) serveStatic(w http.ResponseWriter, r *http.Request) {
@@ -375,6 +440,23 @@ func (s *Server) writeStatus(w http.ResponseWriter, status int) {
 	}
 
 	w.WriteHeader(status)
+}
+
+func (s *Server) writeJSON(w http.ResponseWriter, status int, payload any) {
+	data, err := json.Marshal(payload)
+	if err != nil {
+		status = http.StatusInternalServerError
+		data = []byte(`{"error":"internal error"}`)
+	}
+
+	header := w.Header()
+	header.Del("Content-Encoding")
+	header.Del("Content-Length")
+	header.Set("Content-Type", "application/json")
+	header.Set("Cache-Control", "no-store, max-age=0")
+
+	w.WriteHeader(status)
+	_, _ = w.Write(data)
 }
 
 func ensureQuoted(hash string) string {
