@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"bufio"
 	"compress/gzip"
 	"context"
 	"crypto/rand"
@@ -130,32 +131,25 @@ func Gzip(level int) func(http.Handler) http.Handler {
 				return
 			}
 
-			gw := pool.Get().(*gzip.Writer)
-			gw.Reset(w)
-
-			h := w.Header()
-			h.Del("Content-Length")
-			h.Set("Content-Encoding", "gzip")
-			h.Add("Vary", "Accept-Encoding")
-
-			recorder := &responseRecorder{ResponseWriter: w, status: http.StatusOK, writer: gw, stripLength: true}
+			gzw := &gzipResponseWriter{ResponseWriter: w, pool: &pool}
 
 			defer func() {
-				gw.Close()
-				pool.Put(gw)
+				if rec := recover(); rec != nil {
+					gzw.DisableCompression()
+					panic(rec)
+				}
+				gzw.Close()
 			}()
 
-			next.ServeHTTP(recorder, r)
+			next.ServeHTTP(gzw, r)
 		})
 	}
 }
 
-// responseRecorder captures status and optionally wraps the writer.
+// responseRecorder captures status codes for logging.
 type responseRecorder struct {
 	http.ResponseWriter
-	status      int
-	writer      io.Writer
-	stripLength bool
+	status int
 }
 
 func (rw *responseRecorder) WriteHeader(code int) {
@@ -164,33 +158,33 @@ func (rw *responseRecorder) WriteHeader(code int) {
 }
 
 func (rw *responseRecorder) Write(p []byte) (int, error) {
-	if rw.writer != nil {
-		if rw.stripLength {
-			rw.stripLength = false
-			rw.Header().Del("Content-Length")
-		}
-		return rw.writer.Write(p)
-	}
 	return rw.ResponseWriter.Write(p)
 }
 
-func (rw *responseRecorder) Close() {
-	if rw.closeFn != nil {
-		rw.closeFn()
-		rw.closeFn = nil
+func (rw *responseRecorder) DisableCompression() {
+	if disabler, ok := rw.ResponseWriter.(interface{ DisableCompression() }); ok {
+		disabler.DisableCompression()
 	}
 }
 
-func (rw *responseRecorder) DisableCompression() {
-	if !rw.compressed {
-		return
+func (rw *responseRecorder) Flush() {
+	if flusher, ok := rw.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
 	}
-	rw.compressed = false
-	rw.Close()
-	rw.writer = nil
-	header := rw.Header()
-	header.Del("Content-Encoding")
-	header.Del("Content-Length")
+}
+
+func (rw *responseRecorder) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := rw.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	}
+	return nil, nil, http.ErrNotSupported
+}
+
+func (rw *responseRecorder) Push(target string, opts *http.PushOptions) error {
+	if pusher, ok := rw.ResponseWriter.(http.Pusher); ok {
+		return pusher.Push(target, opts)
+	}
+	return http.ErrNotSupported
 }
 
 func randomID() string {
@@ -217,4 +211,83 @@ func clientIP(r *http.Request) string {
 		return r.RemoteAddr
 	}
 	return host
+}
+
+type gzipResponseWriter struct {
+	http.ResponseWriter
+	pool        *sync.Pool
+	writer      *gzip.Writer
+	wroteHeader bool
+}
+
+func (g *gzipResponseWriter) ensureWriter() {
+	if g.writer != nil {
+		return
+	}
+	gw := g.pool.Get().(*gzip.Writer)
+	gw.Reset(g.ResponseWriter)
+	g.writer = gw
+	header := g.Header()
+	header.Del("Content-Length")
+	header.Set("Content-Encoding", "gzip")
+	header.Add("Vary", "Accept-Encoding")
+}
+
+func (g *gzipResponseWriter) WriteHeader(code int) {
+	g.wroteHeader = true
+	g.ResponseWriter.WriteHeader(code)
+}
+
+func (g *gzipResponseWriter) Write(p []byte) (int, error) {
+	if g.writer == nil {
+		g.ensureWriter()
+	}
+	if !g.wroteHeader {
+		g.WriteHeader(http.StatusOK)
+	}
+	return g.writer.Write(p)
+}
+
+func (g *gzipResponseWriter) Close() {
+	if g.writer == nil {
+		return
+	}
+	_ = g.writer.Close()
+	g.pool.Put(g.writer)
+	g.writer = nil
+}
+
+func (g *gzipResponseWriter) DisableCompression() {
+	if g.writer != nil {
+		g.writer.Reset(io.Discard)
+		_ = g.writer.Close()
+		g.pool.Put(g.writer)
+		g.writer = nil
+	}
+	header := g.Header()
+	header.Del("Content-Encoding")
+	header.Del("Content-Length")
+}
+
+func (g *gzipResponseWriter) Flush() {
+	if g.writer != nil {
+		_ = g.writer.Flush()
+	}
+	if flusher, ok := g.ResponseWriter.(http.Flusher); ok {
+		flusher.Flush()
+	}
+}
+
+func (g *gzipResponseWriter) Hijack() (net.Conn, *bufio.ReadWriter, error) {
+	if hj, ok := g.ResponseWriter.(http.Hijacker); ok {
+		return hj.Hijack()
+	}
+	return nil, nil, http.ErrNotSupported
+}
+
+func (g *gzipResponseWriter) Push(target string, opts *http.PushOptions) error {
+	if pusher, ok := g.ResponseWriter.(http.Pusher); ok {
+		return pusher.Push(target, opts)
+	}
+	return http.ErrNotSupported
 }

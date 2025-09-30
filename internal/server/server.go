@@ -106,10 +106,10 @@ func New(cfg *config.Config, src *assets.Source, logger *slog.Logger, dev bool) 
 
 	srv.handler = middleware.Chain(
 		http.HandlerFunc(srv.router.ServeHTTP),
-		middleware.Recover(logger, srv.recoverHandler),
-		middleware.WithRequestID("X-Request-Id"),
-		middleware.Logging(logger),
 		middleware.Gzip(-1),
+		middleware.Logging(logger),
+		middleware.WithRequestID("X-Request-Id"),
+		middleware.Recover(logger, srv.recoverHandler),
 	)
 
 	return srv, nil
