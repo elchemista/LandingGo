@@ -1,11 +1,17 @@
-/** @type {import('tailwindcss').Config} */
-const path = require("path");
+import { defineConfig } from "tailwindcss";
+import daisyui from "daisyui";
+import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-module.exports = {
+const here = fileURLToPath(new URL(".", import.meta.url));
+
+export default defineConfig({
   content: [
-    path.join(__dirname, "../web/pages/**/*.{html,tmpl}"),
-    path.join(__dirname, "./src/**/*.{js,ts}"),
+    join(here, "../web/pages/**/*.{html,tmpl}"),
+    join(here, "./src/**/*.{js,ts}"),
   ],
-  theme: {},
-  plugins: [],
-};
+  theme: {
+    extend: {},
+  },
+  plugins: [daisyui()],
+});
