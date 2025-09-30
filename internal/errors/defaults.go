@@ -5,17 +5,42 @@ import (
 	"html/template"
 	"strings"
 
-	_ "embed"
-
 	"github.com/elchemista/LandingGo/internal/pages"
 )
 
-var (
-	//go:embed templates/404.html
-	default404Source string
-	//go:embed templates/500.html
-	default500Source string
+const (
+	default404Source = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Not Found</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="space-y-6">
+  <h1 class="text-3xl font-bold text-rose-600">Custom 404</h1>
+  <p>No content lives at <code>{{.RoutePath}}</code>.</p>
+  <a class="nav-link" href="/">Return home</a>
+</body>
+</html>
+`
+	default500Source = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Server Error</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="/static/app.css">
+</head>
+<body class="space-y-6">
+  <h1 class="text-3xl font-bold text-rose-600">Custom 500</h1>
+  <p>We hit a snag processing <code>{{.RoutePath}}</code>. Please try again later.</p>
+</body>
+</html>
+`
+)
 
+var (
 	default404Template = parseTemplate("404.html", default404Source)
 	default500Template = parseTemplate("500.html", default500Source)
 )
