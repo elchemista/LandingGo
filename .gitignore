@@ -3,8 +3,9 @@ build/embedded.go
 build/config_data.go
 build/public/
 node_modules/
-web/static/app.css
-web/static/app.js
+web/static/*.css
+web/static/*.js
+web/static/img/
 .env
 *.log
 *.out

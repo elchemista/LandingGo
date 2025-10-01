@@ -20,6 +20,15 @@ func init() {
 		".woff2": "font/woff2",
 		".ttf":   "font/ttf",
 		".otf":   "font/otf",
+		".mp4":   "video/mp4",
+		".webm":  "video/webm",
+		".ogg":   "video/ogg",
+		".mp3":   "audio/mpeg",
+		".wav":   "audio/wav",
+		".flac":  "audio/flac",
+		".aac":   "audio/aac",
+		".oga":   "audio/ogg",
+		".opus":  "audio/opus",
 	}
 
 	for ext, mt := range types {
