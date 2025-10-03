@@ -119,6 +119,7 @@ func (s *Server) registerRoutes(routes []config.Route) {
 	s.router.Handle("/sitemap.xml", http.HandlerFunc(s.serveSitemap))
 	s.router.Handle("/robots.txt", http.HandlerFunc(s.serveRobots))
 	s.router.Handle("/healthz", http.HandlerFunc(s.serveHealth))
+	s.router.Handle("/favicon.ico", http.HandlerFunc(s.serveFavicon))
 	s.router.HandlePrefix("/static/", http.HandlerFunc(s.serveStatic))
 
 	for _, route := range routes {
@@ -263,6 +264,53 @@ func (s *Server) serveStatic(w http.ResponseWriter, r *http.Request) {
 
 	s.writeStatus(w, http.StatusOK)
 	_, _ = w.Write(asset.Body)
+}
+
+func (s *Server) serveFavicon(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.Header().Set("Allow", "GET, HEAD")
+		s.writeStatus(w, http.StatusMethodNotAllowed)
+		return
+	}
+
+	const faviconPath = "static/favicon.ico"
+
+	if s.source != nil && s.source.StaticExists("favicon.ico") && s.assetCache != nil {
+		asset, err := s.assetCache.Get(faviconPath)
+		if err == nil {
+			header := w.Header()
+			header.Set("Content-Type", asset.MIME)
+			header.Set("Cache-Control", "public, max-age=31536000, immutable")
+			header.Set("Content-Length", fmt.Sprintf("%d", asset.Size))
+
+			s.applyCacheHeaders(w, asset.ETag, asset.LastModified)
+
+			if isNotModified(r, asset.ETag, asset.LastModified) {
+				s.writeStatus(w, http.StatusNotModified)
+				return
+			}
+
+			if r.Method == http.MethodHead {
+				s.writeStatus(w, http.StatusOK)
+				return
+			}
+
+			s.writeStatus(w, http.StatusOK)
+			_, _ = w.Write(asset.Body)
+			return
+		}
+
+		if s.logger != nil {
+			s.logger.Error("favicon asset", "asset", faviconPath, "error", err)
+		}
+	}
+
+	header := w.Header()
+	header.Set("Content-Type", "image/x-icon")
+	header.Set("Cache-Control", "public, max-age=300")
+	header.Set("Content-Length", "0")
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) serveSitemap(w http.ResponseWriter, r *http.Request) {

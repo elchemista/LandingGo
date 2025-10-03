@@ -35,33 +35,122 @@
     </script>
     <script type="module" src="/static/app.js"></script>
 </head>
-
-<body class="flex min-h-[100vh] w-full flex-col bg-[#ffffff]">
-  
-  <div class="container flex justify-center">
-  <details class="dropdown">
-    <summary class="btn m-1">open or close</summary>
-    <ul class="menu dropdown-content bg-base-100 rounded-box z-1 w-52 p-2 shadow-sm">
-      <li><a>Item 1</a></li>
-      <li><a>Item 2</a></li>
-    </ul>
-  </details>
-
-  <button class="btn" onclick="my_modal_1.showModal()">open modal</button>
-  <dialog id="my_modal_1" class="modal">
-    <div class="modal-box">
-      <h3 class="text-lg font-bold">Hello!</h3>
-      <p class="py-4">Press ESC key or click the button below to close</p>
-      <div class="modal-action">
-        <form method="dialog">
-          <!-- if there is a button in form, it will close the modal -->
-          <button class="btn">Close</button>
-        </form>
+    
+<body class="bg-black text-white selection:bg-white selection:text-black">
+      <!-- Navigation -->
+      <nav class="fixed w-full z-50 nav-blur border-b border-white/10">
+        <div class="max-w-[2000px] mx-auto px-4 sm:px-8">
+          <div class="flex justify-between h-24 items-center">
+            <div class="text-2xl sm:text-3xl font-light tracking-[0.3em] logo">ATELIER</div>
+            <div class="hidden md:flex space-x-16 text-xs tracking-[0.2em]">
+              <a href="#" class="hover-line">COLLECTIONS</a>
+              <a href="#" class="hover-line">BESPOKE</a>
+              <a href="#" class="hover-line">LOOKBOOK</a>
+              <a href="#" class="hover-line">CONTACT</a>
+            </div>
+            <button class="md:hidden w-8 h-8 flex flex-col justify-center space-y-2" onclick="toggleMenu()"
+              aria-label="Toggle menu">
+              <span class="w-full h-[1px] bg-white transform transition-transform origin-right"></span>
+              <span class="w-full h-[1px] bg-white transform transition-transform origin-right"></span>
+            </button>
+          </div>
+        </div>
+      </nav>
+    
+      <!-- Mobile Menu -->
+      <div
+        class="mobile-menu fixed inset-0 bg-black z-40 flex flex-col justify-center items-center space-y-12 nav-blur md:hidden pt-24">
+        <a href="#" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">COLLECTIONS</a>
+        <a href="#" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">BESPOKE</a>
+        <a href="#" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">LOOKBOOK</a>
+        <a href="#" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">CONTACT</a>
       </div>
-    </div>
-  </dialog>
-  </div>
+    
+      <!-- Hero Section -->
+    <section class="relative min-h-screen">
+      <!-- Background video -->
+      <video class="absolute inset-0 w-full h-full object-cover" src="/static/img/video.mp4"
+        poster="/static/img/hero.png" autoplay muted loop playsinline preload="metadata">
+        <!-- Fallback text -->
+        Your browser does not support the video tag.
+      </video>
+    
+      <!-- Overlay (optional) -->
+      <div class="absolute inset-0 bg-black/30 pointer-events-none"></div>
+    
+        <div class="relative z-10 max-w-[2000px] mx-auto px-4 sm:px-8 pt-32">
+          <div class="max-w-4xl">
+            <p class="text-sm tracking-[0.3em] mb-8 fade-in" style="animation-delay: 0.5s">WELCOME TO ATELIER</p>
+            <h1 class="text-[12vw] md:text-[7vw] font-light leading-[0.9] mb-8 fade-in" style="animation-delay: 0.8s">
+              CRAFTED WITH<br />PRECISION
+            </h1>
+            <div class="h-[1px] w-32 bg-white reveal-line mb-12" style="animation-delay: 1.2s"></div>
+            <p class="text-lg sm:text-xl font-light tracking-wide text-white/80 max-w-xl mb-16 fade-in leading-relaxed"
+              style="animation-delay: 1.5s">
+              Experience the epitome of tailoring excellence, where every stitch tells a story of uncompromising quality and
+              timeless elegance.
+            </p>
+            <button
+              class="group w-full sm:w-auto px-8 sm:px-12 py-4 border border-white hover:bg-white hover:text-black transition-all duration-500 text-xs tracking-[0.2em] fade-in flex items-center justify-center sm:justify-start gap-4"
+              style="animation-delay: 1.8s">
+              EXPLORE COLLECTION
+              <span class="h-[1px] w-8 bg-current transform transition-transform group-hover:translate-x-2"></span>
+            </button>
+          </div>
+        </div>
+      </section>
+    
+      <!-- Scrolling Text -->
+      <div class="overflow-hidden py-4 sm:py-8 bg-white text-black border-y border-black/20">
+        <div
+          class="whitespace-nowrap marquee inline-block text-[80px] sm:text-[120px] md:text-[180px] font-light leading-none opacity-90">
+          TAILORED EXCELLENCE &nbsp;&nbsp;&nbsp; TAILORED EXCELLENCE &nbsp;&nbsp;&nbsp;
+        </div>
+      </div>
+    
+      <!-- Featured Collection -->
+      <section class="py-20 sm:py-40 px-4 sm:px-8">
+        <div class="max-w-[2000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-20">
+          <div class="space-y-8 sm:space-y-12 self-center">
+            <div class="space-y-4">
+              <p class="text-sm tracking-[0.2em] text-white/60">2024 COLLECTION</p>
+              <h2 class="text-4xl sm:text-5xl font-light tracking-wide">AUTUMN /<br />WINTER</h2>
+            </div>
+            <p class="text-white/70 leading-relaxed text-base sm:text-lg">
+              Our latest collection embodies the perfect fusion of traditional craftsmanship and contemporary design. Each
+              piece is meticulously crafted to stand the test of time.
+            </p>
+            <button
+              class="group w-full sm:w-auto text-sm tracking-[0.2em] hover:text-white/50 transition-colors flex items-center justify-center sm:justify-start gap-6">
+              VIEW COLLECTION
+              <span class="h-[1px] w-12 bg-current transform transition-transform group-hover:translate-x-4"></span>
+            </button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <img src="https://images.unsplash.com/photo-1594938328870-9623159c8c99" alt="Suit Detail"
+              class="w-full aspect-[3/4] object-cover hover:scale-[1.02] transition-transform duration-700">
+            <img src="https://images.unsplash.com/photo-1598808503746-f34c53b9323e" alt="Suit Detail"
+              class="w-full aspect-[3/4] object-cover sm:mt-20 hover:scale-[1.02] transition-transform duration-700">
+          </div>
+        </div>
+      </section>
+    
+      <script>
+        function toggleMenu() {
+          const menu = document.querySelector('.mobile-menu');
+          menu.classList.toggle('active');
 
+          const menuButton = document.querySelector('nav button');
+          const spans = menuButton.querySelectorAll('span');
 
+          spans.forEach((span, index) => {
+            if (menu.classList.contains('active')) {
+              span.style.transform = index === 0 ? 'rotate(-45deg)' : 'rotate(45deg)';
+            } else {
+              span.style.transform = 'none';
+            }
+          });
+        }
+      </script>
+</body>    
 </html>
-
