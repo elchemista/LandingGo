@@ -385,6 +385,14 @@ func mimeType(path string) string {
 		return "font/otf"
 	case ".xml":
 		return "application/xml"
+	case ".mp4":
+		return "video/mp4"
+	case ".webm":
+		return "video/webm"
+	case ".ogv":
+		return "video/ogg"
+	case ".mov":
+		return "video/quicktime"
 	default:
 		return "application/octet-stream"
 	}

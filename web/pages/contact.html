@@ -1,32 +1,222 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html lang="it">
+
 <head>
-  <meta charset="utf-8">
-  <title>{{.Title}} | Sample Landing</title>
-  <link rel="canonical" href="{{.BaseURL}}{{.RoutePath}}">
-  <link rel="stylesheet" href="/static/app.css">
-</head>
-<body class="space-y-8">
-  <header class="space-y-2">
-    <h1 class="text-3xl font-bold">{{.Title}}</h1>
-    <p class="text-slate-600 dark:text-slate-300">We usually respond within one business day. All fields are required.</p>
-  </header>
-  <form id="contact-form" action="/contact" method="post" class="grid gap-6" novalidate>
-    <div class="form-field">
-      <label for="contact-name" class="font-semibold">Name</label>
-      <input id="contact-name" name="name" type="text" autocomplete="name" required class="input-control">
-    </div>
-    <div class="form-field">
-      <label for="contact-email" class="font-semibold">Email</label>
-      <input id="contact-email" name="email" type="email" autocomplete="email" required class="input-control">
-    </div>
-    <div class="form-field">
-      <label for="contact-message" class="font-semibold">Message</label>
-      <textarea id="contact-message" name="message" rows="6" required class="input-control"></textarea>
-    </div>
-    <button type="submit" class="button-primary">Send Message</button>
-  </form>
-  <p id="contact-feedback" role="status" aria-live="polite" class="status-message"></p>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+  <!-- Primary SEO -->
+  <title>Contatta | YMC — Yacht Management Company</title>
+  <meta name="description"
+    content="Parla con YMC per vendita, gestione e charter yacht. Consulenza tecnica e commerciale, crew & maintenance management, pianificazione economica e logistica." />
+  <meta name="robots" content="index,follow" />
+  <link rel="canonical" href="{{.BaseURL}}{{.RoutePath}}" />
+
+  <!-- Language / Internationalization -->
+  <link rel="alternate" href="{{.BaseURL}}/contatta" hreflang="it" />
+  <link rel="alternate" href="{{.BaseURL}}/contatta" hreflang="x-default" />
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Contatta YMC — Yacht Management Company" />
+  <meta property="og:description" content="Prenota una consulenza: vendita, gestione e charter per armatori." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="{{.BaseURL}}{{.RoutePath}}" />
+  <meta property="og:site_name" content="YMC — Yacht Management Company" />
+  <meta property="og:locale" content="it_IT" />
+  <meta property="og:image" content="{{.BaseURL}}/static/img/og.jpg" />
+  <meta property="og:image:alt" content="YMC — Yacht Management Company" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Contatta YMC — Yacht Management Company" />
+  <meta name="twitter:description" content="Consulenza per vendita, gestione e charter yacht." />
+  <meta name="twitter:image" content="{{.BaseURL}}/static/img/og.jpg" />
+
+  <!-- PWA / Icons -->
+  <meta name="theme-color" content="#000000" />
+  <link rel="shortcut icon" href="/static/img/logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png" />
+  <link rel="manifest" href="/static/site.webmanifest" />
+
+  <!-- Performance -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+
+  <!-- Fonts & CSS -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" />
+  <link rel="stylesheet" href="/static/app.css" />
+
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org",
+    "@type":"ContactPage",
+    "name":"Contatta YMC",
+    "url":"{{.BaseURL}}/contatta",
+    "about":{
+      "@type":"Organization",
+      "name":"YMC — Yacht Management Company",
+      "url":"{{.BaseURL}}/",
+      "logo":"{{.BaseURL}}/static/img/logo.svg",
+      "contactPoint":[{
+        "@type":"ContactPoint",
+        "contactType":"customer service",
+        "url":"{{.BaseURL}}/contatta",
+        "availableLanguage":["it","en"]
+      }]
+    }
+  }
+  </script>
+
+  <!-- App -->
+  <script>let FF_FOUC_FIX;</script>
   <script type="module" src="/static/app.js"></script>
+</head>
+
+<body class="bg-black text-white selection:bg-white selection:text-black">
+  <!-- Nav -->
+  <nav class="fixed w-full z-50 nav-blur border-b border-white/10">
+    <div class="max-w-[2000px] mx-auto px-4 sm:px-8">
+      <div class="flex justify-between h-24 items-center">
+        <a href="/" class="text-2xl sm:text-3xl font-light tracking-[0.3em] logo" aria-label="YMC Home">YMC</a>
+        <div class="hidden md:flex space-x-16 text-xs tracking-[0.2em]">
+          <a href="/#servizi" class="hover-line">SERVIZI</a>
+          <a href="/#vendita" class="hover-line">VENDITA</a>
+          <a href="/#charter" class="hover-line">CHARTER</a>
+          <a href="/contatta" class="hover-line">CONTATTA</a>
+        </div>
+        <button class="md:hidden w-8 h-8 flex flex-col justify-center space-y-2" onclick="toggleMenu()"
+          aria-label="Apri menù">
+          <span class="w-full h-[1px] bg-white transform transition-transform origin-right"></span>
+          <span class="w-full h-[1px] bg-white transform transition-transform origin-right"></span>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Mobile menu -->
+  <div
+    class="mobile-menu fixed inset-0 bg-black z-40 flex flex-col justify-center items-center space-y-12 nav-blur md:hidden pt-24">
+    <a href="/#servizi" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">SERVIZI</a>
+    <a href="/#vendita" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">VENDITA</a>
+    <a href="/#charter" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">CHARTER</a>
+    <a href="/contatta" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">CONTATTA</a>
+  </div>
+
+  <!-- Main -->
+  <main class="max-w-[1200px] mx-auto px-4 sm:px-8 pt-40 pb-24 space-y-10">
+    <header class="space-y-3">
+      <p class="text-sm tracking-[0.3em]">PARLA CON NOI</p>
+      <h1 class="text-4xl sm:text-6xl font-light leading-tight">Contatta YMC</h1>
+      <p class="text-white/70 max-w-2xl">
+        Rispondiamo di norma entro un giorno lavorativo. Tutti i campi sono obbligatori. Dicci se ti interessa
+        <strong>vendita/acquisto</strong>, <strong>management</strong> o <strong>charter</strong>.
+      </p>
+    </header>
+
+    <!-- FORM integrato (mantiene id, name, classi e action) -->
+    <form id="contact-form" action="/contact" method="post" class="grid gap-6" novalidate>
+      <div class="form-field">
+        <label for="contact-name" class="font-semibold">Nome e Cognome</label>
+        <input id="contact-name" name="name" type="text" autocomplete="name" required class="input-control" />
+      </div>
+
+      <div class="form-field">
+        <label for="contact-email" class="font-semibold">Email</label>
+        <input id="contact-email" name="email" type="email" autocomplete="email" required class="input-control" />
+      </div>
+
+      <!-- Campo messaggio con suggerimento per interesse -->
+      <div class="form-field">
+        <label for="contact-message" class="font-semibold">Messaggio</label>
+        <textarea id="contact-message" name="message" rows="6" required class="input-control"
+          placeholder="Es.: Interesse Management/Charter. Indica yacht, porto, periodo, budget…"></textarea>
+      </div>
+
+      <!-- Honeypot anti-spam opzionale (non modificare lato server se non supportato) -->
+      <div class="hidden" aria-hidden="true">
+        <label for="company">Company</label>
+        <input id="company" name="company" type="text" tabindex="-1" autocomplete="off" />
+      </div>
+
+      <button type="submit" class="button-primary">Invia richiesta</button>
+    </form>
+
+    <p id="contact-feedback" role="status" aria-live="polite" class="status-message"></p>
+
+    <!-- Info laterali -->
+    <section class="grid md:grid-cols-2 gap-12 pt-6">
+      <div class="space-y-4">
+        <h2 class="text-2xl font-light">Cosa possiamo fare per te</h2>
+        <ul class="list-disc list-inside text-white/70 space-y-2">
+          <li>Piani di acquisto e post-vendita</li>
+          <li>Crew &amp; maintenance management</li>
+          <li>Posizionamento e revenue per charter</li>
+          <li>Refitting, ormeggi, amministrazione</li>
+        </ul>
+      </div>
+      <div class="space-y-2">
+        <h2 class="text-2xl font-light">Contatti diretti</h2>
+        <p class="text-white/70">Email: <a class="underline hover:text-white"
+            href="mailto:info@ymc.example">info@ymc.example</a></p>
+        <p class="text-white/70">Telefono: <a class="underline hover:text-white" href="tel:+390000000000">+39 000 000
+            000</a></p>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function toggleMenu() {
+      const menu = document.querySelector('.mobile-menu');
+      menu.classList.toggle('active');
+      const spans = document.querySelectorAll('nav button span');
+      spans.forEach((span, i) => span.style.transform = menu.classList.contains('active')
+        ? (i === 0 ? 'rotate(-45deg)' : 'rotate(45deg)') : 'none');
+    }
+
+    // Enhancements opzionali: client-side validation + submit con fetch (progressive enhancement)
+    (function () {
+      const form = document.getElementById('contact-form');
+      const feedback = document.getElementById('contact-feedback');
+      if (!form || !window.fetch) return; // lascia il submit classico se fetch non è disponibile
+
+      form.addEventListener('submit', async (e) => {
+        if (!form.checkValidity()) {
+          // Mostra errori nativi del browser
+          return;
+        }
+        // Honeypot: se il campo nascosto è compilato, blocca
+        const hp = form.querySelector('input[name="company"]');
+        if (hp && hp.value.trim() !== "") {
+          e.preventDefault();
+          feedback.textContent = "Invio non riuscito. Riprova.";
+          return;
+        }
+
+        e.preventDefault();
+        feedback.textContent = "Invio in corso…";
+
+        try {
+          const formData = new FormData(form);
+          const res = await fetch(form.action, {
+            method: form.method || 'POST',
+            body: formData,
+            headers: { 'Accept': 'application/json' }
+          });
+
+          if (res.ok) {
+            feedback.textContent = "Grazie! Ti risponderemo a breve.";
+            form.reset();
+          } else {
+            feedback.textContent = "Si è verificato un problema. Riprova più tardi.";
+          }
+        } catch {
+          feedback.textContent = "Connessione assente o instabile. Riprova.";
+        }
+      });
+    })();
+  </script>
 </body>
+
 </html>

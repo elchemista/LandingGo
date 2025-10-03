@@ -10,11 +10,6 @@
       "title": "Home"
     },
     {
-      "path": "/about",
-      "page": "about.html",
-      "title": "About"
-    },
-    {
       "path": "/contact",
       "page": "contact.html",
       "title": "Contact"

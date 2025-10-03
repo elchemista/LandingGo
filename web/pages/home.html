@@ -1,156 +1,225 @@
 <!doctype html>
-<html lang="en">
+<html lang="it">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 
-  <meta name="description" content="" />
+  <!-- Primary SEO -->
+  <title>{{.Title}} | YMC — Yacht Management Company</title>
+  <meta name="description"
+    content="YMC è l’agenzia di vendita e yacht management per armatori che desiderano un servizio integrato: piani di acquisto, gestione e charter per trasformare ogni yacht in un asset profittevole." />
+  <meta name="keywords"
+    content="yacht management, gestione yacht, vendita yacht, charter, crew management, refitting, ormeggi, consulenza nautica, broker nautico" />
+  <meta name="robots" content="index,follow,max-image-preview:large" />
+  <link rel="canonical" href="{{.BaseURL}}{{.RoutePath}}" />
 
-  <meta name="twitter:title" content="" />
-  <meta name="twitter:description" content="" />
+  <!-- Language / Internationalization -->
+  <link rel="alternate" href="{{.BaseURL}}/" hreflang="it" />
+  <link rel="alternate" href="{{.BaseURL}}/contatta" hreflang="it" />
+  <link rel="alternate" href="{{.BaseURL}}/" hreflang="x-default" />
 
-  <!-- Open Graph / Facebook -->
-  <meta property="og:title" content="Title of the project" />
-  <meta property="og:description" content="" />
+  <!-- Open Graph -->
+  <meta property="og:title" content="YMC — Yacht Management Company" />
+  <meta property="og:description"
+    content="Vendita, gestione e charter: un servizio integrato per armatori. Pianificazione economica e operativa per yacht che generano valore." />
   <meta property="og:type" content="website" />
-  <!--Replace with the current website url-->
-  <meta property="og:image" content="" />
+  <meta property="og:site_name" content="YMC — Yacht Management Company" />
+  <meta property="og:url" content="{{.BaseURL}}{{.RoutePath}}" />
+  <meta property="og:locale" content="it_IT" />
+  <meta property="og:image" content="{{.BaseURL}}/static/img/og.jpg" />
+  <meta property="og:image:alt" content="YMC — Yacht Management Company" />
 
-  <link rel="shortcut icon" href="/static/img/logo.png" type="image/x-icon" />
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="YMC — Yacht Management Company" />
+  <meta name="twitter:description" content="Vendita, gestione e charter con approccio integrato per armatori." />
+  <meta name="twitter:image" content="{{.BaseURL}}/static/img/og.jpg" />
+
+  <!-- PWA / Icons / Theme -->
+  <meta name="theme-color" content="#000000" />
+  <link rel="shortcut icon" href="/static/img/logo.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="/static/img/apple-touch-icon.png" />
+  <link rel="manifest" href="/static/site.webmanifest" />
+
+  <!-- Performance -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preload" as="image" href="/static/img/hero.png" imagesrcset="/static/img/hero.png" />
+  <link rel="preload" as="video" href="/static/img/video.mp4" type="video/mp4" />
+
+  <!-- Fonts & CSS -->
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" />
-
-  <title>{{.Title}} | Sample Landing</title>
-  <link rel="canonical" href="{{.BaseURL}}{{.RoutePath}}">
   <link rel="stylesheet" href="/static/app.css">
-
   <link rel="stylesheet"
     href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.11.3/font/bootstrap-icons.min.css"
     integrity="sha512-dPXYcDub/aeb08c63jRq/k6GaKccl256JQy/AnOq7CAnEZ9FzSL9wSbcZkMp4R26vBsMLFYH4kQ67/bbV8XaCQ=="
     crossorigin="anonymous" referrerpolicy="no-referrer" />
 
-    <script>
-      /*to prevent Firefox FOUC, this must be here*/
-      let FF_FOUC_FIX;
-    </script>
-    <script type="module" src="/static/app.js"></script>
+  <!-- Structured Data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "YMC — Yacht Management Company",
+    "url": "{{.BaseURL}}/",
+    "logo": "{{.BaseURL}}/static/img/logo.svg",
+    "sameAs": [],
+    "contactPoint": [{
+      "@type": "ContactPoint",
+      "contactType": "Customer Service",
+      "url": "{{.BaseURL}}/contatta",
+      "availableLanguage": ["it","en"]
+    }]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "YMC — Yacht Management Company",
+    "url": "{{.BaseURL}}/",
+    "inLanguage": "it-IT",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": "{{.BaseURL}}/?q={search_term_string}",
+      "query-input": "required name=search_term_string"
+    }
+  }
+  </script>
+
+  <!-- FOUC fix + App -->
+  <script>let FF_FOUC_FIX;</script>
+  <script type="module" src="/static/app.js"></script>
 </head>
-    
+
 <body class="bg-black text-white selection:bg-white selection:text-black">
-      <!-- Navigation -->
-      <nav class="fixed w-full z-50 nav-blur border-b border-white/10">
-        <div class="max-w-[2000px] mx-auto px-4 sm:px-8">
-          <div class="flex justify-between h-24 items-center">
-            <div class="text-2xl sm:text-3xl font-light tracking-[0.3em] logo">ATELIER</div>
-            <div class="hidden md:flex space-x-16 text-xs tracking-[0.2em]">
-              <a href="#" class="hover-line">COLLECTIONS</a>
-              <a href="#" class="hover-line">BESPOKE</a>
-              <a href="#" class="hover-line">LOOKBOOK</a>
-              <a href="#" class="hover-line">CONTACT</a>
-            </div>
-            <button class="md:hidden w-8 h-8 flex flex-col justify-center space-y-2" onclick="toggleMenu()"
-              aria-label="Toggle menu">
-              <span class="w-full h-[1px] bg-white transform transition-transform origin-right"></span>
-              <span class="w-full h-[1px] bg-white transform transition-transform origin-right"></span>
-            </button>
-          </div>
+  <!-- Navigation -->
+  <nav class="fixed w-full z-50 nav-blur border-b border-white/10">
+    <div class="max-w-[2000px] mx-auto px-4 sm:px-8">
+      <div class="flex justify-between h-24 items-center">
+        <a href="/" class="flex flex-row gap-4 text-2xl sm:text-3xl font-light tracking-[0.3em] logo" aria-label="YMC Home">
+        <img src="/static/img/logo.svg" alt="YMC Logo" class="h-8 w-8 object-center">
+        YMC
+        </a>
+        <div class="hidden md:flex space-x-16 text-xs tracking-[0.2em]">
+          <a href="#servizi" class="hover-line">SERVIZI</a>
+          <a href="#vendita" class="hover-line">VENDITA</a>
+          <a href="#charter" class="hover-line">CHARTER</a>
+          <a href="/contact" class="hover-line">CONTATTA</a>
         </div>
-      </nav>
-    
-      <!-- Mobile Menu -->
-      <div
-        class="mobile-menu fixed inset-0 bg-black z-40 flex flex-col justify-center items-center space-y-12 nav-blur md:hidden pt-24">
-        <a href="#" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">COLLECTIONS</a>
-        <a href="#" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">BESPOKE</a>
-        <a href="#" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">LOOKBOOK</a>
-        <a href="#" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">CONTACT</a>
+        <button class="md:hidden w-8 h-8 flex flex-col justify-center space-y-2" onclick="toggleMenu()"
+          aria-label="Apri menù">
+          <span class="w-full h-[1px] bg-white transform transition-transform origin-right"></span>
+          <span class="w-full h-[1px] bg-white transform transition-transform origin-right"></span>
+        </button>
       </div>
-    
-      <!-- Hero Section -->
-    <section class="relative min-h-screen">
-      <!-- Background video -->
-      <video class="absolute inset-0 w-full h-full object-cover" src="/static/img/video.mp4"
-        poster="/static/img/hero.png" autoplay muted loop playsinline preload="metadata">
-        <!-- Fallback text -->
-        Your browser does not support the video tag.
-      </video>
-    
-      <!-- Overlay (optional) -->
-      <div class="absolute inset-0 bg-black/30 pointer-events-none"></div>
-    
-        <div class="relative z-10 max-w-[2000px] mx-auto px-4 sm:px-8 pt-32">
-          <div class="max-w-4xl">
-            <p class="text-sm tracking-[0.3em] mb-8 fade-in" style="animation-delay: 0.5s">WELCOME TO ATELIER</p>
-            <h1 class="text-[12vw] md:text-[7vw] font-light leading-[0.9] mb-8 fade-in" style="animation-delay: 0.8s">
-              CRAFTED WITH<br />PRECISION
-            </h1>
-            <div class="h-[1px] w-32 bg-white reveal-line mb-12" style="animation-delay: 1.2s"></div>
-            <p class="text-lg sm:text-xl font-light tracking-wide text-white/80 max-w-xl mb-16 fade-in leading-relaxed"
-              style="animation-delay: 1.5s">
-              Experience the epitome of tailoring excellence, where every stitch tells a story of uncompromising quality and
-              timeless elegance.
-            </p>
-            <button
-              class="group w-full sm:w-auto px-8 sm:px-12 py-4 border border-white hover:bg-white hover:text-black transition-all duration-500 text-xs tracking-[0.2em] fade-in flex items-center justify-center sm:justify-start gap-4"
-              style="animation-delay: 1.8s">
-              EXPLORE COLLECTION
-              <span class="h-[1px] w-8 bg-current transform transition-transform group-hover:translate-x-2"></span>
-            </button>
-          </div>
-        </div>
-      </section>
-    
-      <!-- Scrolling Text -->
-      <div class="overflow-hidden py-4 sm:py-8 bg-white text-black border-y border-black/20">
-        <div
-          class="whitespace-nowrap marquee inline-block text-[80px] sm:text-[120px] md:text-[180px] font-light leading-none opacity-90">
-          TAILORED EXCELLENCE &nbsp;&nbsp;&nbsp; TAILORED EXCELLENCE &nbsp;&nbsp;&nbsp;
-        </div>
+    </div>
+  </nav>
+
+  <!-- Mobile Menu -->
+  <div
+    class="mobile-menu fixed inset-0 bg-black z-40 flex flex-col justify-center items-center space-y-12 nav-blur md:hidden pt-24">
+    <a href="#servizi" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">SERVIZI</a>
+    <a href="#vendita" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">VENDITA</a>
+    <a href="#charter" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">CHARTER</a>
+    <a href="/contact" class="text-2xl tracking-[0.2em] hover:text-white/50 transition-colors">CONTATTA</a>
+  </div>
+
+  <!-- Hero -->
+  <section class="relative min-h-screen">
+    <video class="absolute inset-0 w-full h-full object-cover" src="/static/img/video.mp4" poster="/static/img/hero.png"
+      autoplay muted loop playsinline preload="metadata">
+      Il tuo browser non supporta il tag video.
+    </video>
+    <div class="absolute inset-0 bg-black/30 pointer-events-none"></div>
+
+    <div class="relative z-10 max-w-[2000px] mx-auto px-4 sm:px-8 pt-32">
+      <div class="max-w-4xl">
+        <p class="text-sm tracking-[0.3em] mb-8 fade-in" style="animation-delay: .5s">YACHT MANAGEMENT COMPANY</p>
+        <h1 class="text-[12vw] md:text-[7vw] font-light leading-[0.9] mb-8 fade-in" style="animation-delay: .8s">
+          VENDITA &<br />GESTIONE INTEGRATA
+        </h1>
+        <div class="h-[1px] w-32 bg-white reveal-line mb-12" style="animation-delay: 1.2s"></div>
+        <p class="text-lg sm:text-xl font-light tracking-wide text-white/80 max-w-xl mb-16 fade-in leading-relaxed"
+          style="animation-delay: 1.5s">
+          Trasformiamo ogni yacht in un asset: dalla consulenza d’acquisto al post-vendita, dalla gestione tecnica e
+          amministrativa ai programmi di charter, con network e processi collaudati.
+        </p>
+        <a href="#servizi"
+          class="group w-full sm:w-auto px-8 sm:px-12 py-4 border border-white hover:bg-white hover:text-black transition-all duration-500 text-xs tracking-[0.2em] fade-in inline-flex items-center gap-4"
+          style="animation-delay: 1.8s">
+          SCOPRI I SERVIZI
+          <span class="h-[1px] w-8 bg-current transform transition-transform group-hover:translate-x-2"></span>
+        </a>
       </div>
-    
-      <!-- Featured Collection -->
-      <section class="py-20 sm:py-40 px-4 sm:px-8">
-        <div class="max-w-[2000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-20">
-          <div class="space-y-8 sm:space-y-12 self-center">
-            <div class="space-y-4">
-              <p class="text-sm tracking-[0.2em] text-white/60">2024 COLLECTION</p>
-              <h2 class="text-4xl sm:text-5xl font-light tracking-wide">AUTUMN /<br />WINTER</h2>
-            </div>
-            <p class="text-white/70 leading-relaxed text-base sm:text-lg">
-              Our latest collection embodies the perfect fusion of traditional craftsmanship and contemporary design. Each
-              piece is meticulously crafted to stand the test of time.
-            </p>
-            <button
-              class="group w-full sm:w-auto text-sm tracking-[0.2em] hover:text-white/50 transition-colors flex items-center justify-center sm:justify-start gap-6">
-              VIEW COLLECTION
-              <span class="h-[1px] w-12 bg-current transform transition-transform group-hover:translate-x-4"></span>
-            </button>
-          </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <img src="https://images.unsplash.com/photo-1594938328870-9623159c8c99" alt="Suit Detail"
-              class="w-full aspect-[3/4] object-cover hover:scale-[1.02] transition-transform duration-700">
-            <img src="https://images.unsplash.com/photo-1598808503746-f34c53b9323e" alt="Suit Detail"
-              class="w-full aspect-[3/4] object-cover sm:mt-20 hover:scale-[1.02] transition-transform duration-700">
-          </div>
+    </div>
+  </section>
+
+  <!-- Servizi (ex: Featured Collection) -->
+  <section id="servizi" class="py-20 sm:py-40 px-4 sm:px-8">
+    <div class="max-w-[2000px] mx-auto grid grid-cols-1 md:grid-cols-2 gap-12 sm:gap-20">
+      <div class="space-y-8 sm:space-y-12 self-center">
+        <div class="space-y-4">
+          <p class="text-sm tracking-[0.2em] text-white/60">SERVIZI</p>
+          <h2 class="text-4xl sm:text-5xl font-light tracking-wide">SALES · MANAGEMENT · CHARTER</h2>
         </div>
-      </section>
-    
-      <script>
-        function toggleMenu() {
-          const menu = document.querySelector('.mobile-menu');
-          menu.classList.toggle('active');
+        <p class="text-white/70 leading-relaxed text-base sm:text-lg">
+          Siamo specializzati nella compravendita e nella gestione completa dello yacht: refitting, ormeggi, selezione
+          crew, manutenzione programmata, amministrazione e supervisione operativa.
+        </p>
+        <a href="/contact"
+          class="group w-full sm:w-auto text-sm tracking-[0.2em] hover:text-white/50 transition-colors inline-flex items-center gap-6">
+          PARLA CON NOI
+          <span class="h-[1px] w-12 bg-current transform transition-transform group-hover:translate-x-4"></span>
+        </a>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <img src="https://images.unsplash.com/photo-1594938328870-9623159c8c99" alt="Dettaglio yacht"
+          class="w-full aspect-[3/4] object-cover hover:scale-[1.02] transition-transform duration-700">
+        <img src="https://images.unsplash.com/photo-1598808503746-f34c53b9323e" alt="Interni yacht"
+          class="w-full aspect-[3/4] object-cover sm:mt-20 hover:scale-[1.02] transition-transform duration-700">
+      </div>
+    </div>
+  </section>
 
-          const menuButton = document.querySelector('nav button');
-          const spans = menuButton.querySelectorAll('span');
+  <!-- Vendita -->
+  <section id="vendita" class="py-12 sm:py-24 px-4 sm:px-8 border-t border-white/10">
+    <div class="max-w-[2000px] mx-auto grid gap-8 md:grid-cols-3">
+      <div>
+        <h3 class="text-2xl font-light mb-3 tracking-wide">Sales</h3>
+        <p class="text-white/70 leading-relaxed">
+          Ti aiutiamo a scegliere la barca giusta in base a esigenze e obiettivi. Seguiamo l’intero processo d’acquisto:
+          trattativa, due diligence, pratiche e post-vendita.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-2xl font-light mb-3 tracking-wide">Management</h3>
+        <p class="text-white/70 leading-relaxed">
+          Ci sostituiamo all’armatore nelle incombenze: posto barca, crew management, manutenzione, amministrazione,
+          compliance e piani di gestione.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-2xl font-light mb-3 tracking-wide">Charter — Central</h3>
+        <p class="text-white/70 leading-relaxed">
+          Pianifichiamo il modello economico e logistico, posizioniamo l’unità nel circuito charter con booking,
+          revenue e operations management, trasformando lo yacht in un ramo d’impresa produttivo.
+        </p>
+      </div>
+    </div>
+  </section>
 
-          spans.forEach((span, index) => {
-            if (menu.classList.contains('active')) {
-              span.style.transform = index === 0 ? 'rotate(-45deg)' : 'rotate(45deg)';
-            } else {
-              span.style.transform = 'none';
-            }
-          });
-        }
-      </script>
-</body>    
+  <script>
+    function toggleMenu() {
+      const menu = document.querySelector('.mobile-menu');
+      menu.classList.toggle('active');
+      const spans = document.querySelectorAll('nav button span');
+      spans.forEach((span, i) => span.style.transform = menu.classList.contains('active')
+        ? (i === 0 ? 'rotate(-45deg)' : 'rotate(45deg)') : 'none');
+    }
+  </script>
+</body>
+
 </html>

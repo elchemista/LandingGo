@@ -1,6 +1,6 @@
 GO ?= go
 NPM ?= npm
-CONFIG ?= config.dev.json
+CONFIG ?= config.prod.json
 ADDR ?= :8080
 BINARY ?= bin/landing
 
