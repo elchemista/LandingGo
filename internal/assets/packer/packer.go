@@ -74,6 +74,10 @@ func (o *options) run() error {
 		Files:       make(map[string]assets.ManifestEntry),
 	}
 
+	if err := o.copyRootFiles(publicDir, &manifest); err != nil {
+		return err
+	}
+
 	assetSet := make(map[string]struct{})
 	pageSet := uniquePages(cfg)
 
@@ -138,6 +142,45 @@ func (o *options) run() error {
 
 	if err := writeEmbeddedConfigSource(o.buildDir, configData); err != nil {
 		return err
+	}
+
+	return nil
+}
+
+func (o *options) copyRootFiles(publicDir string, manifest *assets.Manifest) error {
+	entries, err := os.ReadDir(o.webDir)
+	if err != nil {
+		return fmt.Errorf("read web directory: %w", err)
+	}
+
+	for _, entry := range entries {
+		if entry.IsDir() {
+			continue
+		}
+
+		name := entry.Name()
+		if strings.TrimSpace(name) == "" {
+			continue
+		}
+
+		src := filepath.Join(o.webDir, name)
+		dst := filepath.Join(publicDir, name)
+
+		info, err := os.Stat(src)
+		if err != nil {
+			return fmt.Errorf("stat root asset %s: %w", name, err)
+		}
+
+		if err := copyFile(src, dst); err != nil {
+			return err
+		}
+
+		data, err := os.ReadFile(src)
+		if err != nil {
+			return fmt.Errorf("read root asset %s: %w", name, err)
+		}
+
+		addManifestEntry(manifest, filepath.ToSlash(name), data, info.ModTime().UTC())
 	}
 
 	return nil
@@ -385,6 +428,14 @@ func mimeType(path string) string {
 		return "font/otf"
 	case ".xml":
 		return "application/xml"
+	case ".mp4":
+		return "video/mp4"
+	case ".webm":
+		return "video/webm"
+	case ".ogv":
+		return "video/ogg"
+	case ".mov":
+		return "video/quicktime"
 	default:
 		return "application/octet-stream"
 	}

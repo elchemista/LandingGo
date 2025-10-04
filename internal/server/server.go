@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io/fs"
 	"log/slog"
 	"net/http"
 	"path/filepath"
@@ -18,7 +19,6 @@ import (
 	errorspkg "github.com/elchemista/LandingGo/internal/errors"
 	"github.com/elchemista/LandingGo/internal/middleware"
 	"github.com/elchemista/LandingGo/internal/pages"
-	"github.com/elchemista/LandingGo/internal/robots"
 	"github.com/elchemista/LandingGo/internal/router"
 	"github.com/elchemista/LandingGo/internal/sitemap"
 )
@@ -37,7 +37,6 @@ type Server struct {
 	assetCache *assets.Cache
 
 	sitemap []byte
-	robots  []byte
 
 	contact contact.Sender
 
@@ -78,12 +77,6 @@ func New(cfg *config.Config, src *assets.Source, logger *slog.Logger, dev bool) 
 	}
 	sitemapPayload = append([]byte("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"), sitemapPayload...)
 
-	robotsPayload, err := robots.Build(cfg.Site.BaseURL, cfg.Site.RobotsPolicy)
-	if err != nil {
-		return nil, fmt.Errorf("robots build: %w", err)
-	}
-	robotsPayload = append(robotsPayload, '\n')
-
 	var contactSender contact.Sender
 	if cfg.Contact.Enabled() {
 		contactSender = contact.NewService(cfg.Contact, nil)
@@ -98,7 +91,6 @@ func New(cfg *config.Config, src *assets.Source, logger *slog.Logger, dev bool) 
 		pageMgr:    pageMgr,
 		assetCache: assetCache,
 		sitemap:    sitemapPayload,
-		robots:     robotsPayload,
 		contact:    contactSender,
 	}
 
@@ -122,25 +114,24 @@ func (s *Server) registerRoutes(routes []config.Route) {
 	s.router.Handle("/favicon.ico", http.HandlerFunc(s.serveFavicon))
 	s.router.HandlePrefix("/static/", http.HandlerFunc(s.serveStatic))
 
-	for _, route := range routes {
-		route := route
+	var contactRoute *config.Route
 
-		handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			s.servePage(w, r, route)
-		})
-
+	for i := range routes {
+		route := routes[i]
 		if route.Path == "/contact" {
-			handler = http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				if r.Method == http.MethodPost {
-					s.handleContactSubmit(w, r)
-					return
-				}
-				s.servePage(w, r, route)
-			})
+			contactRoute = &routes[i]
+			continue
 		}
 
-		s.router.Handle(route.Path, handler)
+		routeCopy := route
+		s.router.Handle(routeCopy.Path, http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			s.servePage(w, r, routeCopy)
+		}))
 	}
+
+	s.router.Handle("/contact", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		s.serveContact(w, r, contactRoute)
+	}))
 
 	s.router.NotFound(http.HandlerFunc(s.serveNotFound))
 
@@ -183,6 +174,30 @@ func (s *Server) servePage(w http.ResponseWriter, r *http.Request, route config.
 
 	s.writeStatus(w, http.StatusOK)
 	_, _ = w.Write(entry.Body)
+}
+
+func (s *Server) serveContact(w http.ResponseWriter, r *http.Request, route *config.Route) {
+	switch r.Method {
+	case http.MethodPost:
+		s.handleContactSubmit(w, r)
+		return
+	case http.MethodGet, http.MethodHead:
+		if route == nil {
+			w.Header().Set("Allow", "POST")
+			s.serveNotFound(w, r)
+			return
+		}
+		s.servePage(w, r, *route)
+		return
+	default:
+		allow := "POST"
+		if route != nil {
+			allow = "GET, HEAD, POST"
+		}
+		w.Header().Set("Allow", allow)
+		s.writeStatus(w, http.StatusMethodNotAllowed)
+		return
+	}
 }
 
 func (s *Server) handleContactSubmit(w http.ResponseWriter, r *http.Request) {
@@ -266,7 +281,57 @@ func (s *Server) serveStatic(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(asset.Body)
 }
 
+func (s *Server) serveAssetFromRoot(w http.ResponseWriter, r *http.Request, relPath, cacheControl string) bool {
+	if relPath == "" {
+		return false
+	}
+
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.Header().Set("Allow", "GET, HEAD")
+		s.writeStatus(w, http.StatusMethodNotAllowed)
+		return true
+	}
+
+	if s.assetCache == nil {
+		return false
+	}
+
+	asset, err := s.assetCache.Get(relPath)
+	if err != nil {
+		return false
+	}
+
+	if cacheControl == "" {
+		cacheControl = "public, max-age=300"
+	}
+
+	header := w.Header()
+	header.Set("Content-Type", asset.MIME)
+	header.Set("Cache-Control", cacheControl)
+	header.Set("Content-Length", fmt.Sprintf("%d", asset.Size))
+
+	s.applyCacheHeaders(w, asset.ETag, asset.LastModified)
+
+	if isNotModified(r, asset.ETag, asset.LastModified) {
+		s.writeStatus(w, http.StatusNotModified)
+		return true
+	}
+
+	if r.Method == http.MethodHead {
+		s.writeStatus(w, http.StatusOK)
+		return true
+	}
+
+	s.writeStatus(w, http.StatusOK)
+	_, _ = w.Write(asset.Body)
+	return true
+}
+
 func (s *Server) serveFavicon(w http.ResponseWriter, r *http.Request) {
+	if s.serveAssetFromRoot(w, r, "favicon.ico", "public, max-age=31536000, immutable") {
+		return
+	}
+
 	if r.Method != http.MethodGet && r.Method != http.MethodHead {
 		w.Header().Set("Allow", "GET, HEAD")
 		s.writeStatus(w, http.StatusMethodNotAllowed)
@@ -274,10 +339,8 @@ func (s *Server) serveFavicon(w http.ResponseWriter, r *http.Request) {
 	}
 
 	const faviconPath = "static/favicon.ico"
-
-	if s.source != nil && s.source.StaticExists("favicon.ico") && s.assetCache != nil {
-		asset, err := s.assetCache.Get(faviconPath)
-		if err == nil {
+	if s.assetCache != nil {
+		if asset, err := s.assetCache.Get(faviconPath); err == nil {
 			header := w.Header()
 			header.Set("Content-Type", asset.MIME)
 			header.Set("Cache-Control", "public, max-age=31536000, immutable")
@@ -298,9 +361,7 @@ func (s *Server) serveFavicon(w http.ResponseWriter, r *http.Request) {
 			s.writeStatus(w, http.StatusOK)
 			_, _ = w.Write(asset.Body)
 			return
-		}
-
-		if s.logger != nil {
+		} else if s.logger != nil && !errors.Is(err, fs.ErrNotExist) {
 			s.logger.Error("favicon asset", "asset", faviconPath, "error", err)
 		}
 	}
@@ -310,7 +371,7 @@ func (s *Server) serveFavicon(w http.ResponseWriter, r *http.Request) {
 	header.Set("Cache-Control", "public, max-age=300")
 	header.Set("Content-Length", "0")
 
-	w.WriteHeader(http.StatusOK)
+	s.writeStatus(w, http.StatusOK)
 }
 
 func (s *Server) serveSitemap(w http.ResponseWriter, r *http.Request) {
@@ -329,18 +390,20 @@ func (s *Server) serveSitemap(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) serveRobots(w http.ResponseWriter, r *http.Request) {
-	header := w.Header()
-	header.Set("Content-Type", "text/plain; charset=utf-8")
-	header.Set("Cache-Control", "public, max-age=300")
-	header.Set("Content-Length", fmt.Sprintf("%d", len(s.robots)))
-
-	if r.Method == http.MethodHead {
-		s.writeStatus(w, http.StatusOK)
+	if s.serveAssetFromRoot(w, r, "robots.txt", "public, max-age=300") {
 		return
 	}
 
-	s.writeStatus(w, http.StatusOK)
-	_, _ = w.Write(s.robots)
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		return
+	}
+
+	header := w.Header()
+	header.Set("Content-Type", "text/plain; charset=utf-8")
+	header.Set("Cache-Control", "no-store, max-age=0")
+	header.Set("Content-Length", "0")
+
+	s.writeStatus(w, http.StatusNotFound)
 }
 
 func (s *Server) serveHealth(w http.ResponseWriter, r *http.Request) {
@@ -359,7 +422,32 @@ func (s *Server) serveHealth(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write(health)
 }
 
+func (s *Server) tryServeRootRequest(w http.ResponseWriter, r *http.Request) bool {
+	if r == nil || r.URL == nil {
+		return false
+	}
+
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		return false
+	}
+
+	path := strings.TrimPrefix(r.URL.Path, "/")
+	if path == "" {
+		return false
+	}
+
+	if strings.Contains(path, "..") || strings.Contains(path, "/") {
+		return false
+	}
+
+	return s.serveAssetFromRoot(w, r, path, "")
+}
+
 func (s *Server) serveNotFound(w http.ResponseWriter, r *http.Request) {
+	if s.tryServeRootRequest(w, r) {
+		return
+	}
+
 	s.writeErrorPage(w, r, "404.html", errorspkg.Default404, http.StatusNotFound)
 }
 

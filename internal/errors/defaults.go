@@ -13,14 +13,25 @@ const (
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Not Found</title>
+  <title>404 - Page not found</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="/static/app.css">
 </head>
-<body class="space-y-6">
-  <h1 class="text-3xl font-bold text-rose-600">Custom 404</h1>
-  <p>No content lives at <code>{{.RoutePath}}</code>.</p>
-  <a class="nav-link" href="/">Return home</a>
+<body class="w-full h-screen">
+  <div class="bg-gradient-to-r from-slate-200 to-gray-200 dark:from-gray-800 dark:to-gray-900 text-black dark:text-white">
+    <div class="flex items-center justify-center min-h-screen px-2">
+      <div class="text-center">
+        <h1 class="text-9xl font-bold">404</h1>
+        <p class="text-2xl font-medium mt-4">Oops! Page not found</p>
+        <p class="mt-4 mb-8">The page you're looking for doesn't exist or has been moved.</p>
+        <a href="/"
+          class="px-6 py-3 bg-white font-bold rounded-full hover:bg-purple-100 transition duration-300 ease-in-out dark:bg-gray-700 dark:hover:bg-gray-600 dark:text-white">
+          Go Home
+        </a>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
 `
@@ -28,13 +39,19 @@ const (
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Server Error</title>
+  <title>500 - Internal Server Error</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="robots" content="noindex">
   <link rel="stylesheet" href="/static/app.css">
 </head>
-<body class="space-y-6">
-  <h1 class="text-3xl font-bold text-rose-600">Custom 500</h1>
-  <p>We hit a snag processing <code>{{.RoutePath}}</code>. Please try again later.</p>
+<body class="w-full h-screen">
+  <div class="bg-gradient-to-r from-slate-200 to-gray-200 dark:from-gray-800 dark:to-gray-900 text-black dark:text-white">
+    <div class="h-screen flex flex-col justify-center items-center">
+      <h1 class="text-8xl font-extrabold text-red-500">500</h1>
+      <p class="text-4xl font-medium text-gray-800">Internal Server Error</p>
+      <p class="text-xl text-gray-800 mt-4">We apologize for the inconvenience. Please try again later.</p>
+    </div>
+  </div>
 </body>
 </html>
 `

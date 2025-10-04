@@ -31,7 +31,7 @@ func main() {
 
 	logger := log.New(cfg.logLevel)
 
-	src, err := loadSource(cfg.dev)
+	src, err := loadSource(cfg.dev, cfg.folder)
 	if err != nil {
 		logger.Error("load assets", "error", err)
 		os.Exit(1)
@@ -98,6 +98,7 @@ type runtimeConfig struct {
 	configPath string
 	addr       string
 	logLevel   string
+	folder     string
 	dev        bool
 }
 
@@ -132,12 +133,15 @@ func parseConfig() runtimeConfig {
 
 	logLevelDefault := envOrDefault("LOG_LEVEL", "info")
 	devDefault := envBool("DEV", false)
+	folderDefault := envOrDefault("FOLDER", "")
 
 	configFlag := &stringFlag{value: configDefault}
 	addrFlag := &stringFlag{value: addrDefault}
+	folderFlag := &stringFlag{value: folderDefault}
 
 	flag.Var(configFlag, "config", "path to configuration file")
 	flag.Var(addrFlag, "addr", "address to listen on (host:port)")
+	flag.Var(folderFlag, "folder", "path to the asset folder (overrides embedded assets)")
 	logLevel := flag.String("log-level", logLevelDefault, "log level (debug, info, warn, error)")
 	dev := flag.Bool("dev", devDefault, "run in development mode (serve assets from disk)")
 
@@ -147,6 +151,7 @@ func parseConfig() runtimeConfig {
 		configPath: configFlag.value,
 		addr:       addrFlag.value,
 		logLevel:   *logLevel,
+		folder:     folderFlag.value,
 		dev:        *dev,
 	}
 }
@@ -221,9 +226,14 @@ func applyRuntimeOverrides(cfg *config.Config) {
 	}
 }
 
-func loadSource(dev bool) (*assets.Source, error) {
-	if dev {
-		return assets.NewDisk(webRoot)
+func loadSource(dev bool, folder string) (*assets.Source, error) {
+	root := strings.TrimSpace(folder)
+	if root == "" && dev {
+		root = webRoot
+	}
+
+	if root != "" {
+		return assets.NewDisk(root)
 	}
 
 	sub, err := fs.Sub(build.FS, "public")
