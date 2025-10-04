@@ -67,7 +67,7 @@ func TestValidateBaseURL(t *testing.T) {
 	}
 }
 
-func TestValidateContactRequiresRoute(t *testing.T) {
+func TestValidateContactWithoutRouteAllowed(t *testing.T) {
 	cfg := &Config{
 		Site:   Site{BaseURL: "http://localhost:8080"},
 		Routes: []Route{{Path: "/", Page: "home.html"}},
@@ -80,9 +80,8 @@ func TestValidateContactRequiresRoute(t *testing.T) {
 	cfg.WithLoadedTime(time.Now())
 	_ = cfg.normalize()
 
-	err := cfg.Validate(func(string) bool { return true })
-	if err == nil || !strings.Contains(err.Error(), "contact route") {
-		t.Fatalf("expected contact route error, got %v", err)
+	if err := cfg.Validate(func(string) bool { return true }); err != nil {
+		t.Fatalf("expected validation to succeed without contact route, got %v", err)
 	}
 }
 

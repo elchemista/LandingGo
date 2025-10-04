@@ -44,8 +44,9 @@ For my use case—and many client landing pages—**Go is simpler**, **cheaper**
 
 ```
 cmd/
-  landing/        # binary entrypoint
-  pack/           # asset packer CLI
+  landing/        # runtime server entrypoint
+  landingo/       # build/pack CLI
+  pack/           # legacy asset packer CLI
 internal/
   assets/         # FS helpers, cache, packer library
   config/         # JSON schema parsing & validation
@@ -72,18 +73,50 @@ make test             # runs unit/integration tests
 
 The asset pipeline is managed by `esbuild` and Tailwind via `npm run build`. Source files live under `assets/src/` and emit compiled bundles into `web/static/`, which the Go packer then embeds.
 
+## Command Line Tooling
+
+The `landingo` CLI smooths the build workflow by wrapping asset packing and compilation in a single command.
+
+### Build a binary from custom folders
+
+```bash
+go run ./cmd/landingo build \
+  --web my-landing \
+  --config my-landing/config.prod.json \
+  --output dist/landing
+```
+
+By default the command:
+
+- packs assets into `build/public` (override with `--build`),
+- compiles `./cmd/landing` with `-trimpath -ldflags "-s -w"`, and
+- writes the final binary to `bin/landing`.
+
+Tweak the behaviour with flags:
+
+- `--skip-pack` – only compile; assume assets already packed
+- `--ldflags="-s -w"` – forwarded to `go build`
+- `--tags=` – build tags
+- `--go=/path/to/go` – use an alternate Go toolchain
+
+To pack assets without compiling, run:
+
+```bash
+go run ./cmd/landingo pack --web my-landing --config my-landing/config.prod.json
+```
+
 ## Production Build
 
 ```bash
-make pack              # generates build/public/, manifest.json, embedded.go
-make build             # pack + go build -o bin/landing
+make build             # packs + compiles to bin/landing via landingo CLI
 ./bin/landing --addr :8080 --config config.example.json
 ```
 
-Environment variables or CLI flags can override defaults:
+Runtime flags / environment variables:
 
 - `--config` (env: `CONFIG`) path to configuration JSON.
-- `--addr` (env: `ADDR` or `PORT`) listener address. Defaults to `:8080`.
+- `--addr` (env: `ADDR` or `PORT`) listener address (default `:8080`).
+- `--folder` (env: `FOLDER`) serve assets from a local folder at runtime.
 - `--dev` (env: `DEV`) serve directly from disk.
 - `--log-level` (env: `LOG_LEVEL`) one of `debug`, `info`, `warn`, `error`.
 
@@ -117,10 +150,10 @@ Configuration lives under the top-level `contact` key:
 
 In production builds the server creates a Mailgun client using the configuration plus the `MAILGUN_API_KEY` environment variable; set that secret via Fly.io or your process supervisor. In `--dev` mode the contact handler remains active, but without a `contact` block POST requests return `503 Service Unavailable` so you can work without real credentials. Omit the `contact` block entirely to disable outbound email.
 
-For deployments keep API keys out of version control—inject them via environment-specific config files or secret management tooling, then run `make pack && make build` to bake the configuration into the binary.
+For deployments keep API keys out of version control—inject them via environment-specific config files or secret management tooling, then run `make build` (or `landingo build ...`) to bake the configuration into the binary.
 
 ## Notes
 
-- Regenerate assets (`make pack`) any time pages, static files, or the config changes before running `make build`.
+- Regenerate assets (`landingo pack` or `make build`) any time pages, static files, or the config changes before compiling.
 - The generated `build/embedded.go` and `build/public/` should not be committed; they are ignored via `.gitignore`.
 - Binary builds include all assets and can run on machines without access to the original `web/` directory.

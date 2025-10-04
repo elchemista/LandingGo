@@ -198,7 +198,6 @@ func (c *Config) Validate(fsExists func(name string) bool) error {
 	}
 
 	seenPaths := make(map[string]struct{}, len(c.Routes))
-	contactRoute := false
 
 	for i := range c.Routes {
 		rt := &c.Routes[i]
@@ -232,19 +231,16 @@ func (c *Config) Validate(fsExists func(name string) bool) error {
 			rt.Title = defaultTitleFromPage(rt.Page)
 		}
 
-		if rt.Path == "/contact" {
-			contactRoute = true
-		}
 	}
 
-	if err := c.validateContact(contactRoute); err != nil {
+	if err := c.validateContact(); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (c *Config) validateContact(contactRoute bool) error {
+func (c *Config) validateContact() error {
 	contact := c.Contact
 	if contact.isZero() {
 		return nil
@@ -252,10 +248,6 @@ func (c *Config) validateContact(contactRoute bool) error {
 
 	if contact.Recipient == "" || contact.From == "" || contact.Mailgun.Domain == "" {
 		return errors.New("contact configuration is incomplete")
-	}
-
-	if !contactRoute {
-		return errors.New("contact route '/contact' must be defined when contact configuration is provided")
 	}
 
 	if !strings.Contains(contact.Recipient, "@") {
